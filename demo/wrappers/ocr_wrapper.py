@@ -5,12 +5,12 @@ def call_analyze_api(
     model: str = None,
     custom_prompt: str = None,
     session_id: str = None,
-    api_url: str = "http://localhost:8005/api/analyze/"
+    api_url: str = "http://localhost:8000/api/analyze/"
 ):
     with open(file_path, "rb") as f:
         files = {"file": (file_path, f)}
         data = {
-            "task_type": "perdix"
+            "task_type": "ocr"
         }
         if model:
             data["model"] = model

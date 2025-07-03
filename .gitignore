@@ -1,0 +1,18 @@
+__pypackages__/
+.env
+eenv/
+__pycache__/
+.vscode
+venv/
+data/
+recordings/
+*.txt
+*.log
+*.json
+*.yaml
+*.yml
+*.csv
+*.jsonl
+models/yolov3.weights
+# models/yolov3.cfg
+# models/coco.names
