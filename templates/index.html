@@ -261,6 +261,14 @@
                                 </select>
                             </div>
 
+                           <div class="d-grid mt-3">
+                                <button type="button" id="generateWrapperBtn" class="btn btn-secondary">
+                                    <i class="bi bi-file-earmark-code me-2"></i>Gener   ate Wrapper
+                                </button>
+                            </div>
+
+
+
                             <div class="mb-3">
                                 <label class="form-label">Input:</label>
                                 <div class="border rounded-3 p-3 bg-light">
@@ -754,6 +762,8 @@ async function handleLogout() {
             }
         });
 
+
+
         let currentFiles = null;
         let currentConfig = null;
         let currentTaskType = null;
@@ -945,6 +955,62 @@ async function handleLogout() {
                         if (loading) loading.classList.add('d-none');
                     }
                 });
+            }
+        });
+        document.getElementById('generateWrapperBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            // Collect values from the form
+            const formData = new FormData();
+            const taskType = document.getElementById('taskType').value;
+            const model = document.getElementById('model')?.value;
+            const customPrompt = document.getElementById('customPrompt')?.value;
+            const useCustomPrompt = document.getElementById('useCustomPrompt')?.checked;
+            const textContent = document.getElementById('textContent')?.value.trim();
+            const fileInput = document.getElementById('file');
+
+            // Minimal validation
+            if (!taskType) {
+                alert('Task type is required');
+                return;
+            }
+
+            // Append required fields
+            formData.append('task_type', taskType);
+            if (model) formData.append('model', model);
+            if (customPrompt && useCustomPrompt) formData.append('custom_prompt', customPrompt);
+
+            // Add file or text content if provided
+            if (textContent) {
+                const textBlob = new Blob([textContent], { type: 'text/plain' });
+                formData.append('file', textBlob, 'input.txt');
+            } else if (fileInput.files[0]) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            try {
+                // Send POST request
+                const response = await fetch('/demo/routes/generate-wrapper', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',
+                    headers: addAuthHeader(true) // ensure you don't set content-type manually for FormData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('API Error:', data);
+                    alert(data.detail || 'Wrapper generation failed');
+                    return;
+                }
+
+                console.log('Wrapper generated successfully:', data);
+                alert(data.message || 'Wrapper generated');
+
+            } catch (error) {
+                console.error('Request failed:', error);
+                alert('Request failed: ' + error.message);
             }
         });
 

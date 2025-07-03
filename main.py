@@ -13,6 +13,10 @@ from auth.auth import (
     authenticate_user, create_access_token, get_current_user,
     ACCESS_TOKEN_EXPIRE_MINUTES, User, USERS_DB, create_unlimited_access_token
 )
+from demo.routes.wrapper import router as wrapper_router
+
+
+
 
 from api.analyze import analyze_logs_router
 from api.config import config_router
@@ -47,6 +51,12 @@ app.include_router(
     dependencies=[Depends(get_current_user)]
 )
 
+app.include_router(
+    wrapper_router, 
+    prefix="/demo/routes", 
+    tags=["wrapper"]
+)
+
 # Include the config router
 app.include_router(
     config_router,
@@ -70,6 +80,7 @@ app.include_router(
     tags=["vault"],
     dependencies=[Depends(get_current_user)]
 )
+
 
 
 # from demo.routes.wrapper import demo_router  # ✅ Import this
@@ -206,4 +217,4 @@ app.add_middleware(
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 3000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8005, reload=True)

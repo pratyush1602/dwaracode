@@ -27,14 +27,14 @@ COPY . /app/
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
+ENV PORT=8001
 
 # Expose the port
 EXPOSE 8000
 
 # Create a script to run the application
 RUN echo '#!/bin/bash\n\
-python -m uvicorn main:app --host 0.0.0.0 --port $PORT' > /app/start.sh && \
+python -m uvicorn main:app --host 127.0.0.1 --port $PORT' > /app/start.sh && \
     chmod +x /app/start.sh
 
 

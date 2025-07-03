@@ -10,7 +10,7 @@ def call_analyze_api(
     with open(file_path, "rb") as f:
         files = {"file": (file_path, f)}
         data = {
-            "task_type": "perdix"
+            "task_type": "tomcat"
         }
         if model:
             data["model"] = model
