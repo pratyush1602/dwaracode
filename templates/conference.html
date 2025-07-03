@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Conference</title>
+    <style>
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .control-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: #4a4a4a;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .control-btn:hover {
+            background: #666;
+        }
+        .control-btn.active {
+            background: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-grid" id="videoGrid"></div>
+    
+    <div class="controls">
+        <button class="control-btn active" id="audioBtn">
+            Mute Audio
+        </button>
+        <button class="control-btn active" id="videoBtn">
+            Stop Video
+        </button>
+        <button class="control-btn" id="screenShareBtn">
+            Share Screen
+        </button>
+        <button class="control-btn" id="leaveBtn">
+            Leave
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mediasoup-client@3/dist/mediasoup-client.min.js"></script>
+    <script>
+        let device;
+        let sendTransport;
+        let recvTransport;
+        let producer;
+        let consumers = new Map();
+        let localStream;
+        let screenStream;
+        let isAudioEnabled = true;
+        let isVideoEnabled = true;
+        let isScreenSharing = false;
+
+        const videoGrid = document.getElementById('videoGrid');
+        const audioBtn = document.getElementById('audioBtn');
+        const videoBtn = document.getElementById('videoBtn');
+        const screenShareBtn = document.getElementById('screenShareBtn');
+        const leaveBtn = document.getElementById('leaveBtn');
+
+        // Generate a random client ID
+        const clientId = Math.random().toString(36).substring(7);
+
+        // Connect to WebSocket server
+        const ws = new WebSocket(`ws://${window.location.host}/api/conference/ws/${clientId}`);
+
+        ws.onmessage = async (event) => {
+            const message = JSON.parse(event.data);
+            
+            switch (message.type) {
+                case 'routerRtpCapabilities':
+                    await loadDevice(message.data);
+                    break;
+                case 'webrtcTransportCreated':
+                    await connectTransport(message.data);
+                    break;
+                case 'transportConnected':
+                    await startStreaming();
+                    break;
+                case 'newProducer':
+                    await consumeStream(message.data);
+                    break;
+                case 'consumerCreated':
+                    await handleConsumer(message.data);
+                    break;
+                case 'clientDisconnected':
+                    removeParticipant(message.data.clientId);
+                    break;
+            }
+        };
+
+        async function loadDevice(routerRtpCapabilities) {
+            try {
+                device = new mediasoupClient.Device();
+                await device.load({ routerRtpCapabilities });
+                
+                // Request WebRTC transport
+                ws.send(JSON.stringify({
+                    type: 'createWebRtcTransport',
+                    data: { clientId }
+                }));
+            } catch (error) {
+                console.error('Failed to load device:', error);
+            }
+        }
+
+        async function connectTransport(transportData) {
+            try {
+                sendTransport = device.createSendTransport(transportData);
+                
+                sendTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                    ws.send(JSON.stringify({
+                        type: 'connectTransport',
+                        data: { dtlsParameters }
+                    }));
+                    callback();
+                });
+
+                sendTransport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
+                    ws.send(JSON.stringify({
+                        type: 'produce',
+                        data: { kind, rtpParameters }
+                    }));
+                    callback({ id: Date.now().toString() });
+                });
+
+                // Get local media stream
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                });
+
+                // Create local video element
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'video-container';
+                const videoElement = document.createElement('video');
+                videoElement.srcObject = localStream;
+                videoElement.autoplay = true;
+                videoElement.playsInline = true;
+                videoElement.muted = true;
+                videoContainer.appendChild(videoElement);
+                videoGrid.appendChild(videoContainer);
+
+            } catch (error) {
+                console.error('Failed to connect transport:', error);
+            }
+        }
+
+        async function startStreaming() {
+            try {
+                // Produce audio and video
+                const audioTrack = localStream.getAudioTracks()[0];
+                const videoTrack = localStream.getVideoTracks()[0];
+
+                if (audioTrack) {
+                    await sendTransport.produce({
+                        track: audioTrack,
+                        encodings: [
+                            { maxBitrate: 96000 }
+                        ]
+                    });
+                }
+
+                if (videoTrack) {
+                    await sendTransport.produce({
+                        track: videoTrack,
+                        encodings: [
+                            { maxBitrate: 500000 }
+                        ]
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to start streaming:', error);
+            }
+        }
+
+        async function consumeStream({ producerId, producerClientId }) {
+            try {
+                const { rtpCapabilities } = device;
+                
+                ws.send(JSON.stringify({
+                    type: 'consume',
+                    data: {
+                        producerId,
+                        rtpCapabilities
+                    }
+                }));
+            } catch (error) {
+                console.error('Failed to consume stream:', error);
+            }
+        }
+
+        async function handleConsumer({ id, producerId, kind, rtpParameters }) {
+            try {
+                const consumer = await recvTransport.consume({
+                    id,
+                    producerId,
+                    kind,
+                    rtpParameters
+                });
+
+                const stream = new MediaStream([consumer.track]);
+                
+                // Create remote video element
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'video-container';
+                const videoElement = document.createElement('video');
+                videoElement.srcObject = stream;
+                videoElement.autoplay = true;
+                videoElement.playsInline = true;
+                videoContainer.appendChild(videoElement);
+                videoGrid.appendChild(videoContainer);
+
+                consumers.set(consumer.id, { consumer, videoContainer });
+            } catch (error) {
+                console.error('Failed to handle consumer:', error);
+            }
+        }
+
+        function removeParticipant(clientId) {
+            // Remove video element and clean up resources
+            consumers.forEach(({ consumer, videoContainer }, consumerId) => {
+                if (consumer.producerId === clientId) {
+                    videoContainer.remove();
+                    consumer.close();
+                    consumers.delete(consumerId);
+                }
+            });
+        }
+
+        // Control button handlers
+        audioBtn.onclick = () => {
+            isAudioEnabled = !isAudioEnabled;
+            localStream.getAudioTracks().forEach(track => track.enabled = isAudioEnabled);
+            audioBtn.textContent = isAudioEnabled ? 'Mute Audio' : 'Unmute Audio';
+            audioBtn.classList.toggle('active');
+        };
+
+        videoBtn.onclick = () => {
+            isVideoEnabled = !isVideoEnabled;
+            localStream.getVideoTracks().forEach(track => track.enabled = isVideoEnabled);
+            videoBtn.textContent = isVideoEnabled ? 'Stop Video' : 'Start Video';
+            videoBtn.classList.toggle('active');
+        };
+
+        screenShareBtn.onclick = async () => {
+            try {
+                if (!isScreenSharing) {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: true
+                    });
+                    
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    await sendTransport.produce({
+                        track: videoTrack,
+                        encodings: [
+                            { maxBitrate: 1000000 }
+                        ]
+                    });
+                    
+                    screenShareBtn.textContent = 'Stop Sharing';
+                    screenShareBtn.classList.add('active');
+                    isScreenSharing = true;
+
+                    videoTrack.onended = () => {
+                        stopScreenSharing();
+                    };
+                } else {
+                    stopScreenSharing();
+                }
+            } catch (error) {
+                console.error('Failed to share screen:', error);
+            }
+        };
+
+        function stopScreenSharing() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+            }
+            screenShareBtn.textContent = 'Share Screen';
+            screenShareBtn.classList.remove('active');
+            isScreenSharing = false;
+        }
+
+        leaveBtn.onclick = () => {
+            if (sendTransport) {
+                sendTransport.close();
+            }
+            if (recvTransport) {
+                recvTransport.close();
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
+            ws.close();
+            window.location.href = '/';
+        };
+
+        // Handle page unload
+        window.onbeforeunload = () => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+        };
+    </script>
+</body>
+</html> 

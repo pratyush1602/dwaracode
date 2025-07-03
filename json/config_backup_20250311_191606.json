@@ -1,0 +1,83 @@
+{
+  "perdix": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following log. Note that it might be a stacktrace, a simple application log, or a snippet from an external service (e.g., Nginx, HTTPS, etc.). Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the error or event in plain language, *including the date and time if available*. * If a clear error message is present (e.g., 'Aadhaar number \u2026 already exist' or a specific request/response error), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * For stacktraces: Detail the exception type, pinpoint the method and line number where the error originated, and trace its propagation. * For application logs or request/response logs: Identify key components (such as the service name, endpoint, error code, or HTTP status) and explain the underlying mechanism. * For logs from external services (e.g., Nginx or HTTPS): Clearly identify the log source and any correlation with internal services. * Note: For issues related to LMS or Encore, only identify the problem without suggesting any fixes or configuration changes. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * For stacktraces: Describe what the error means and indicate where to look in the code. * For application or external logs: Explain the observed event (such as a failed request or server error) in simple terms without proposing specific fixes. 4. Root Cause: * Clearly state the root cause of the error or log event based on your analysis. 5. Potential Areas for Investigation (For Experienced Developers ONLY): * Based on the root cause, suggest *potential* areas in the code or configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a developer familiar with the system. * Do NOT provide specific code changes. Focus on identifying *potential* problem areas or configuration settings. * If the root cause is unclear, or if the log is from an external system (LMS/Encore), state \"Further investigation by the relevant team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Service is down,\" \"High: User functionality is impaired,\" \"Medium: Intermittent error, but service is operational,\" \"Low: Minor issue, no impact on functionality,\" \"Informational: No error, just a log message\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **]\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "tomcat": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following system log. Note that it might be a standard system log, a kernel log, a service log, or a daemon log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the event or status in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Service started successfully' or 'Disk space warning'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the system component or service generating the log. * Detail any process IDs, thread IDs, or service names mentioned. * Explain what system operation was being performed and its outcome. * Note any resource utilization metrics or thresholds mentioned. * For logs from system services: Clearly identify the service name and any correlation with other services. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the system was trying to do and whether it succeeded or failed. * Describe any impacts on system performance or functionality in simple terms. 4. Root Cause: * Clearly state the root cause of the system event based on your analysis. 5. Potential Areas for Investigation (For Experienced Administrators ONLY): * Based on the root cause, suggest *potential* areas in the system configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by an administrator familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the system administration team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: System is down,\" \"High: Core service is impaired,\" \"Medium: Non-critical service issue,\" \"Low: Minor issue, no impact on functionality,\" \"Informational: Regular system operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "networklogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following network log. Note that it might be a firewall log, router log, switch log, VPN log, or other network device log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the network event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Connection refused' or 'Packet dropped'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the network component generating the log (e.g., firewall, router, load balancer). * Detail the IP addresses, ports, protocols, and network interfaces involved. * Explain the network operation being performed and its outcome. * Note any bandwidth, latency, or other performance metrics mentioned. * For logs from network devices: Clearly identify the device and any correlation with other network components. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the network was trying to do and whether it succeeded or failed. * Describe any impacts on network connectivity or performance in simple terms. 4. Root Cause: * Clearly state the root cause of the network event based on your analysis. 5. Potential Areas for Investigation (For Experienced Network Engineers ONLY): * Based on the root cause, suggest *potential* areas in the network configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a network engineer familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the network team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Network is down,\" \"High: Major service connectivity is impaired,\" \"Medium: Partial connectivity issues,\" \"Low: Minor issue, no impact on connectivity,\" \"Informational: Regular network operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "accesslogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following access log. Note that it might be a web server access log, application login log, API access log, or database access log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the access event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Login successful' or 'Access denied'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the system component handling the access request (e.g., web server, auth service, database). * Detail the user/client identifiers, IP addresses, endpoints, methods, and response codes. * Explain what access was being attempted and whether it succeeded or failed. * Note any performance metrics (response time, resource utilization) mentioned. * For web access logs: Parse the HTTP method, URL path, response code, and user agent information. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the user or system was trying to access and whether they were allowed or denied. * Describe any unusual patterns or potential security concerns in simple terms. 4. Root Cause: * Clearly state the root cause of the access event based on your analysis. 5. Potential Areas for Investigation (For Experienced Developers/Admins ONLY): * Based on the root cause, suggest *potential* areas in the access control configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a professional familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the security team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Unauthorized access detected,\" \"High: Authentication failure pattern detected,\" \"Medium: Unusual access pattern,\" \"Low: Minor access issue,\" \"Informational: Regular access operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "claude-3-sonnet"
+    }
+  ],
+  "securitylogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following security log. Note that it might be an IDS/IPS log, antivirus log, authentication log, audit log, or SIEM alert. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the security event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Suspicious activity detected' or 'Authentication failure'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the security component generating the log (e.g., firewall, IDS, authentication service). * Detail any attack signatures, CVEs, or threat indicators mentioned. * Explain what security check was performed and its outcome. * Note any affected assets, users, or services mentioned. * For logs from security tools: Clearly identify the tool name and correlation with other security events. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what security threat was detected or what security policy was enforced. * Describe potential impacts on system security in simple terms without causing unnecessary alarm. 4. Root Cause: * Clearly state the root cause of the security event based on your analysis. 5. Potential Areas for Investigation (For Security Professionals ONLY): * Based on the root cause, suggest *potential* areas in the security configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a security professional familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the security team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Active breach detected,\" \"High: Potential unauthorized access,\" \"Medium: Suspicious activity detected,\" \"Low: Minor policy violation,\" \"Informational: Regular security check\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "ocr": [
+    {
+      "prompt": "Extract text from an uploaded image or PDF file using Optical Character Recognition (OCR). Ensure the output maintains the original structure and formatting as much as possible. The extracted text should be clean and ready for further processing or analysis.",
+      "model": "claude-3-sonnet"
+    }
+  ],
+  "models": {
+    "gpt-4o-mini": {
+      "name": "GPT-4O Mini",
+      "provider": "openai",
+      "maxTokens": 8192,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "claude-3-sonnet": {
+      "name": "Claude 3 Sonnet",
+      "provider": "anthropic",
+      "maxTokens": 200000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "gpt-4": {
+      "name": "GPT-4",
+      "provider": "openai",
+      "maxTokens": 8192,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "gemini-2-flash": {
+      "name": "Gemini 2.0 Flash",
+      "provider": "google",
+      "maxTokens": 2048,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    }
+  },
+  "PanCard": [
+    {
+      "prompt": "\"Extract and structure the PAN card details from the following text:. Identify and return key details such as:\n\nPAN Number (10-character alphanumeric code)\nName (Full name of the cardholder)\nFather\u2019s Name\nDate of Birth (DD/MM/YYYY format)",
+      "model": "claude-3-sonnet"
+    }
+  ]
+}

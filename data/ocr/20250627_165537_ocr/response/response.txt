@@ -1,0 +1,9 @@
+Analysis Response
+Original File: Pratyush_Passbook (1) (1).pdf
+Model Used: gpt-4
+Task Type: ocr
+Timestamp: 2025-06-27T16:55:37.635834
+
+=== Response ===
+
+Model 'gpt-4' is not vision-capable and cannot analyze PDFs visually.

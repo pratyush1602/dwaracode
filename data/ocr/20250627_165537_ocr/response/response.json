@@ -1,0 +1,7 @@
+{
+  "model_used": "gpt-4",
+  "task_type": "ocr",
+  "response": "Model 'gpt-4' is not vision-capable and cannot analyze PDFs visually.",
+  "timestamp": "2025-06-27T16:55:37.635834",
+  "original_filename": "Pratyush_Passbook (1) (1).pdf"
+}

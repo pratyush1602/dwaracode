@@ -1,0 +1,9 @@
+Analysis Response
+Original File: Pratyush_Passbook (1) (1).pdf
+Model Used: claude-3-sonnet
+Task Type: ocr
+Timestamp: 2025-07-01T22:01:42.882251
+
+=== Response ===
+
+Provider 'anthropic' initialization failed. Unable to use API key from session or environment.

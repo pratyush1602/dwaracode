@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .video-feed {
+            width: 100%;
+            border-radius: 8px;
+            background-color: #000;
+            aspect-ratio: 16/9;
+        }
+        .status-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+        }
+        .instructions-panel {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">KYC Verification</h2>
+
+        <!-- Status Messages -->
+        <div id="statusMessages" class="mb-3">
+            <!-- Status messages will appear here -->
+        </div>
+
+        <!-- Video Feed -->
+        <div class="video-container">
+            <video id="customerVideo" class="video-feed" autoplay playsinline muted
+                   style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <div class="status-badge" id="streamStatus">Initializing camera...</div>
+        </div>
+
+        <!-- Instructions Panel -->
+        <div class="card mt-4">
+            <div class="card-header">
+                Instructions
+            </div>
+            <div class="card-body">
+                <div id="instructionsPanel" class="instructions-panel">
+                    <!-- Instructions will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="card mt-4">
+            <div class="card-header">
+                Verification Status
+            </div>
+            <div class="card-body">
+                <div id="verificationResults">
+                    Waiting for verification to begin...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class KYCCustomerSession {
+            constructor() {
+                this.ws = null;
+                this.pc = null;
+                this.stream = null;
+                this.sessionId = window.location.pathname.split('/').pop();
+                this.initializeElements();
+                this.startSession();
+            }
+
+            initializeElements() {
+                this.videoElement = document.getElementById('customerVideo');
+                this.streamStatus = document.getElementById('streamStatus');
+                this.statusMessages = document.getElementById('statusMessages');
+                this.instructionsPanel = document.getElementById('instructionsPanel');
+                this.verificationResults = document.getElementById('verificationResults');
+            }
+
+            async startSession() {
+                try {
+                    // Get camera access
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            facingMode: 'user'
+                        },
+                        audio: false
+                    });
+                    
+                    this.videoElement.srcObject = this.stream;
+                    await this.videoElement.play();
+                    this.streamStatus.textContent = 'Camera connected';
+                    
+                    // Connect WebSocket and setup WebRTC
+                    await this.connectWebSocket();
+                    await this.initializeWebRTC();
+
+                } catch (error) {
+                    console.error('Start session error:', error);
+                    this.showError('Camera access denied or connection error');
+                }
+            }
+
+            async initializeWebRTC() {
+                try {
+                    this.pc = new RTCPeerConnection({
+                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    });
+
+                    // Add all tracks from the stream to the peer connection
+                    this.stream.getTracks().forEach(track => {
+                        console.log('Adding track:', track.kind);
+                        this.pc.addTrack(track, this.stream);
+                    });
+
+                    // Handle ICE candidates
+                    this.pc.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            console.log('Sending ICE candidate');
+                            this.ws.send(JSON.stringify({
+                                type: 'ice_candidate',
+                                candidate: event.candidate
+                            }));
+                        }
+                    };
+
+                    // Create and send offer
+                    const offer = await this.pc.createOffer();
+                    await this.pc.setLocalDescription(offer);
+                    console.log('Sending offer');
+                    this.ws.send(JSON.stringify({
+                        type: 'offer',
+                        sdp: this.pc.localDescription.sdp
+                    }));
+
+                } catch (error) {
+                    console.error('WebRTC initialization error:', error);
+                    this.showError('Failed to initialize video connection');
+                }
+            }
+
+            connectWebSocket() {
+                return new Promise((resolve, reject) => {
+                    this.ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/kyc/session/${this.sessionId}`);
+                    
+                    this.ws.onopen = () => {
+                        console.log('WebSocket connected');
+                        resolve();
+                    };
+
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        reject(error);
+                    };
+
+                    this.ws.onmessage = async (event) => {
+                        const data = JSON.parse(event.data);
+                        console.log('Received message:', data.type);
+                        
+                        switch (data.type) {
+                            case 'answer':
+                                try {
+                                    await this.pc.setRemoteDescription(new RTCSessionDescription({
+                                        type: 'answer',
+                                        sdp: data.sdp
+                                    }));
+                                    console.log('Set remote description success');
+                                } catch (error) {
+                                    console.error('Error setting remote description:', error);
+                                }
+                                break;
+
+                            case 'ice_candidate':
+                                try {
+                                    if (data.candidate) {
+                                        await this.pc.addIceCandidate(data.candidate);
+                                        console.log('Added ICE candidate');
+                                    }
+                                } catch (error) {
+                                    console.error('Error adding ICE candidate:', error);
+                                }
+                                break;
+
+                            case 'instruction':
+                                this.showInstruction(data.message);
+                                break;
+                            case 'verification_result':
+                                this.showVerificationResult(data);
+                                break;
+                            case 'document_feedback':
+                                this.handleDocumentFeedback(data.result);
+                                break;
+                            case 'document_captured':
+                                this.handleDocumentCaptured(data.result);
+                                break;
+                        }
+                    };
+                });
+            }
+
+            showInstruction(message) {
+                const instructionDiv = document.createElement('div');
+                instructionDiv.className = 'alert alert-info mb-2';
+                instructionDiv.textContent = message;
+                this.instructionsPanel.prepend(instructionDiv);
+
+                // Remove old instructions if there are too many
+                while (this.instructionsPanel.children.length > 5) {
+                    this.instructionsPanel.removeChild(this.instructionsPanel.lastChild);
+                }
+            }
+
+            showVerificationResult(data) {
+                const resultClass = {
+                    'approved': 'success',
+                    'rejected': 'danger',
+                    'retake': 'warning'
+                }[data.result] || 'info';
+
+                this.verificationResults.innerHTML = `
+                    <div class="alert alert-${resultClass}">
+                        ${data.message || `Document ${data.result}`}
+                    </div>
+                `;
+            }
+
+            showError(message) {
+                this.statusMessages.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            }
+
+            showStatus(message, type = 'info') {
+                this.statusMessages.innerHTML = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            }
+
+            cleanup() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+                if (this.ws) {
+                    this.ws.close();
+                }
+            }
+
+            handleDocumentFeedback(result) {
+                const statusElement = document.getElementById('streamStatus');
+                
+                if (result.document_detected) {
+                    statusElement.textContent = `Document detected: ${result.document_type}`;
+                    statusElement.style.backgroundColor = 'rgba(40, 167, 69, 0.7)';
+                    
+                    // Show feedback to user
+                    this.showInstruction(`
+                        Document Quality: ${result.quality}
+                        ${!result.corners_visible ? '⚠️ Please show all corners' : ''}
+                        ${result.lighting === 'poor' ? '⚠️ Please improve lighting' : ''}
+                        ${result.issues?.length ? '⚠️ ' + result.issues.join(', ') : ''}
+                    `);
+                } else {
+                    statusElement.textContent = 'No document detected';
+                    statusElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                }
+            }
+
+            handleDocumentCaptured(result) {
+                const statusElement = document.getElementById('streamStatus');
+                
+                if (result.document_detected) {
+                    statusElement.textContent = 'Document captured and verified';
+                    statusElement.style.backgroundColor = 'rgba(40, 167, 69, 0.7)';
+                    
+                    // Show feedback to user
+                    this.showInstruction(`
+                        Document captured: ${result.document_type}
+                        Quality: ${result.quality}
+                        ${!result.corners_visible ? '⚠️ Please show all corners' : ''}
+                        ${result.lighting === 'poor' ? '⚠️ Please improve lighting' : ''}
+                        ${result.issues?.length ? '⚠️ ' + result.issues.join(', ') : ''}
+                    `);
+                } else {
+                    statusElement.textContent = 'Document capture failed';
+                    statusElement.style.backgroundColor = 'rgba(220, 53, 69, 0.7)';
+                    this.showInstruction('Please show a valid document and wait for admin to capture again');
+                }
+            }
+        }
+
+        // Initialize session
+        let kycSession;
+        window.onload = () => {
+            kycSession = new KYCCustomerSession();
+        };
+
+        // Cleanup on page unload
+        window.onbeforeunload = () => {
+            if (kycSession) {
+                kycSession.cleanup();
+            }
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .key-card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .masked-key {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .provider-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        .badge-default {
+            background-color: #28a745;
+            color: white;
+        }
+        .show-key-btn {
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.8rem;
+        }
+        .expire-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        .session-badge {
+            background-color: #17a2b8;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .session-info {
+            background-color: #e2f8ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .keys-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .key-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .key-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #212529;
+        }
+        .key-item p {
+            margin: 0.25rem 0;
+            color: #6c757d;
+        }
+        .default-badge {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="mb-4">
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+        
+        <h1 class="mb-4">API Key Management</h1>
+        
+        <!-- Session Information -->
+        <div class="session-info mb-4">
+            <h5><i class="fas fa-info-circle"></i> Session-Based Key Storage</h5>
+            <p class="mb-0">
+                For your security, API keys are stored only for the current browser session and will expire when you close this tab or after the specified expiration time.
+                Keys are not permanently stored on the server and are encrypted while in transit and at rest.
+            </p>
+        </div>
+        
+        <!-- Add New Key Button -->
+        <div class="mb-4">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addKeyModal">
+                <i class="fas fa-key"></i> Add New API Key
+            </button>
+            <button type="button" class="btn btn-outline-danger ms-2" id="clearSessionsBtn">
+                <i class="fas fa-trash"></i> Clear All Sessions
+            </button>
+        </div>
+        
+        <!-- Key Display Area -->
+        <div id="apiKeysContainer">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading API keys...</p>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Key Modal -->
+        <div class="modal fade" id="addKeyModal" tabindex="-1" aria-labelledby="addKeyModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addKeyModalLabel">Add New API Key</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Your API key will be stored only for the current browser session.
+                            It will expire when you close this tab or after the specified expiration time.
+                        </div>
+                        
+                        <form id="apiKeyForm">
+                            <input type="hidden" id="keyId" name="keyId">
+                            
+                            <div class="mb-3">
+                                <label for="provider" class="form-label">Provider</label>
+                                <select class="form-select" id="provider" name="provider" required>
+                                    <option value="" selected disabled>Select Provider</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="google">Google AI</option>
+                                    <option value="azure">Azure</option>
+                                    <option value="deepinfra">DeepInfra</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="otherProviderField" style="display: none;">
+                                <label for="otherProvider" class="form-label">Provider Name</label>
+                                <input type="text" class="form-control" id="otherProvider" name="otherProvider" placeholder="Enter provider name">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="keyName" class="form-label">Key Name</label>
+                                <input type="text" class="form-control" id="keyName" name="keyName" required placeholder="e.g., Production Key, Test Key">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="apiKey" class="form-label">API Key</label>
+                                <textarea class="form-control" id="apiKey" name="apiKey" rows="3" required placeholder="Enter your API key"></textarea>
+                                <div class="form-text">Your API key will be stored securely for this browser session only.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="sessionDuration" class="form-label">Session Duration</label>
+                                <select class="form-select" id="sessionDuration" name="sessionDuration">
+                                    <option value="1">1 hour</option>
+                                    <option value="8">8 hours</option>
+                                    <option value="24" selected>24 hours (1 day)</option>
+                                    <option value="72">72 hours (3 days)</option>
+                                    <option value="168">1 week</option>
+                                </select>
+                                <div class="form-text">The key will expire after this time, even if the browser remains open.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="expiration" class="form-label">Expiration Date (Optional)</label>
+                                <input type="date" class="form-control" id="expiration" name="expiration">
+                                <div class="form-text">If set, this will override the session duration above.</div>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="isDefault" name="isDefault">
+                                <label class="form-check-label" for="isDefault">
+                                    Set as default key for this provider
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="saveKeyBtn">Save Key</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Confirmation Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this API key session?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Clear All Sessions Confirmation Modal -->
+        <div class="modal fade" id="clearSessionsModal" tabindex="-1" aria-labelledby="clearSessionsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="clearSessionsModalLabel">Clear All Sessions</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to clear all API key sessions?</p>
+                        <p class="text-danger"><strong>This will remove access to all API keys until you add them again.</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmClearSessionsBtn">Clear All Sessions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Variables to store state
+            let currentKeys = {};
+            let deleteKeyData = null;
+            
+            // Get DOM elements
+            const apiKeysContainer = document.getElementById('apiKeysContainer');
+            const apiKeyForm = document.getElementById('apiKeyForm');
+            const saveKeyBtn = document.getElementById('saveKeyBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const clearSessionsBtn = document.getElementById('clearSessionsBtn');
+            const confirmClearSessionsBtn = document.getElementById('confirmClearSessionsBtn');
+            const providerSelect = document.getElementById('provider');
+            const otherProviderField = document.getElementById('otherProviderField');
+            const otherProviderInput = document.getElementById('otherProvider');
+            const addKeyModal = new bootstrap.Modal(document.getElementById('addKeyModal'));
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            const clearSessionsModal = new bootstrap.Modal(document.getElementById('clearSessionsModal'));
+            
+            // Show/hide "other provider" field based on selection
+            providerSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    otherProviderField.style.display = 'block';
+                } else {
+                    otherProviderField.style.display = 'none';
+                }
+            });
+            
+            // Load API keys on page load
+            loadApiKeys();
+            
+            // Event listener for save key button
+            saveKeyBtn.addEventListener('click', saveApiKey);
+            
+            // Event listener for confirm delete button
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (deleteKeyData) {
+                    deleteApiKey(deleteKeyData.provider, deleteKeyData.keyId);
+                }
+            });
+            
+            // Event listener for clear sessions button
+            clearSessionsBtn.addEventListener('click', function() {
+                clearSessionsModal.show();
+            });
+            
+            // Event listener for confirm clear sessions button
+            confirmClearSessionsBtn.addEventListener('click', function() {
+                clearAllSessions();
+            });
+            
+            // Load API keys from server
+            function loadApiKeys() {
+                apiKeysContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p>Loading API keys...</p></div>';
+                
+                fetch('/api/vault/get_keys', {
+                    headers: addAuthHeader()
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load API keys');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        currentKeys = data;
+                        renderApiKeys();
+                    })
+                    .catch(error => {
+                        console.error('Error loading API keys:', error);
+                        apiKeysContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Error loading API keys: ${error.message}
+                                <button class="btn btn-outline-danger btn-sm ms-3" onclick="loadApiKeys()">
+                                    <i class="fas fa-sync"></i> Retry
+                                </button>
+                            </div>`;
+                    });
+            }
+            
+            // Render API keys to the UI
+            function renderApiKeys() {
+                if (!currentKeys || !currentKeys.success || !currentKeys.keys || currentKeys.keys.length === 0) {
+                    apiKeysContainer.innerHTML = '<div class="alert alert-info">No API keys have been added yet for this session. Add your first key using the button above.</div>';
+                    return;
+                }
+
+                // Group keys by provider
+                const keysByProvider = {};
+                currentKeys.keys.forEach(key => {
+                    const provider = key.provider || 'unknown';
+                    if (!keysByProvider[provider]) {
+                        keysByProvider[provider] = [];
+                    }
+                    keysByProvider[provider].push(key);
+                });
+
+                let html = `
+                    <div class="session-info mb-4">
+                        <h5><i class="fas fa-info-circle"></i> Current Session</h5>
+                        <p>Session ID: <code>${currentKeys.session_id}</code></p>
+                        <p>Expires: ${new Date(currentKeys.expires_at).toLocaleString()}</p>
+                        <p>Total Keys: ${currentKeys.keys.length}</p>
+                        <p>Providers: ${Object.keys(keysByProvider).length}</p>
+                    </div>
+                `;
+
+                // Render keys grouped by provider
+                const providers = Object.keys(keysByProvider).sort();
+                
+                for (const provider of providers) {
+                    const keys = keysByProvider[provider];
+                    
+                    html += `
+                        <div class="provider-section">
+                            <h3 class="mb-3 text-capitalize">
+                                ${provider}
+                                <span class="badge bg-secondary">${keys.length} key${keys.length !== 1 ? 's' : ''}</span>
+                            </h3>
+                            <div class="row">
+                    `;
+
+                    for (const key of keys) {
+                        const createdDate = key.created_at ? new Date(key.created_at).toLocaleDateString() : 'Unknown';
+                        
+                        // Calculate expiration info
+                        let expirationInfo = '';
+                        if (key.expires_at) {
+                            const expDate = new Date(key.expires_at);
+                            const now = new Date();
+                            const timeLeft = expDate - now;
+                            
+                            let statusClass = 'bg-success';
+                            let statusText = 'Active';
+                            
+                            if (timeLeft <= 0) {
+                                statusClass = 'bg-danger';
+                                statusText = 'Expired';
+                            } else if (timeLeft < 86400000) { // Less than 24 hours (in milliseconds)
+                                statusClass = 'bg-warning';
+                                statusText = 'Expiring Soon';
+                            }
+                            
+                            let timeLeftStr = '';
+                            if (timeLeft > 0) {
+                                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                
+                                if (days > 0) {
+                                    timeLeftStr = `${days}d ${hours}h remaining`;
+                                } else {
+                                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                                    timeLeftStr = `${hours}h ${minutes}m remaining`;
+                                }
+                            }
+                            
+                            expirationInfo = `
+                                <div class="expire-date mt-2">
+                                    <span class="badge ${statusClass}">${statusText}</span>
+                                    Expires: ${expDate.toLocaleDateString()} ${expDate.toLocaleTimeString()}
+                                    ${timeLeftStr ? `<span class="ms-2 badge bg-info">${timeLeftStr}</span>` : ''}
+                                </div>
+                            `;
+                        }
+
+                        html += `
+                            <div class="col-md-6">
+                                <div class="card key-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>${key.name || 'Unnamed Key'}</strong>
+                                            ${key.is_default ? '<span class="badge bg-success ms-2">Default</span>' : ''}
+                                            <span class="session-badge ms-2">Session</span>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary edit-key-btn" 
+                                                data-provider="${provider}" 
+                                                data-key-id="${key.id}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-key-btn" 
+                                                data-provider="${provider}" 
+                                                data-key-id="${key.id}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="masked-key">
+                                            ${key.masked_key || '****'}
+                                        </div>
+                                        ${expirationInfo}
+                                        <div class="mt-2 small text-muted">
+                                            Created: ${createdDate}
+                                            ${key.updated_at ? `<br>Updated: ${new Date(key.updated_at).toLocaleString()}` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+
+                apiKeysContainer.innerHTML = html;
+
+                // Add event listeners
+                addKeyEventListeners();
+            }
+            
+            function addKeyEventListeners() {
+                // Add event listeners to edit buttons
+                document.querySelectorAll('.edit-key-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const provider = this.getAttribute('data-provider');
+                        const keyId = this.getAttribute('data-key-id');
+                        editKey(provider, keyId);
+                    });
+                });
+
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-key-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const provider = this.getAttribute('data-provider');
+                        const keyId = this.getAttribute('data-key-id');
+                        
+                        deleteKeyData = { provider, keyId };
+                        confirmModal.show();
+                    });
+                });
+            }
+            
+            // Function to edit an existing key
+            function editKey(provider, keyId) {
+                const keyToEdit = currentKeys[provider].find(k => k.id === keyId);
+                
+                if (!keyToEdit) {
+                    console.error('Key not found:', keyId);
+                    return;
+                }
+                
+                // Reset the form
+                apiKeyForm.reset();
+                
+                // Fill in the form with existing data
+                document.getElementById('keyId').value = keyId;
+                
+                if (providerSelect.querySelector(`option[value="${provider}"]`)) {
+                    providerSelect.value = provider;
+                    otherProviderField.style.display = 'none';
+                } else {
+                    providerSelect.value = 'other';
+                    otherProviderField.style.display = 'block';
+                    otherProviderInput.value = provider;
+                }
+                
+                document.getElementById('keyName').value = keyToEdit.name;
+                document.getElementById('apiKey').value = keyToEdit.key;
+                
+                // Set default session duration to 24 hours
+                document.getElementById('sessionDuration').value = "24";
+                
+                if (keyToEdit.expiration) {
+                    // Format the date as YYYY-MM-DD for the date input
+                    const expDate = new Date(keyToEdit.expiration);
+                    const year = expDate.getFullYear();
+                    const month = String(expDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(expDate.getDate()).padStart(2, '0');
+                    document.getElementById('expiration').value = `${year}-${month}-${day}`;
+                } else {
+                    document.getElementById('expiration').value = '';
+                }
+                
+                document.getElementById('isDefault').checked = keyToEdit.is_default;
+                
+                // Update modal title
+                document.getElementById('addKeyModalLabel').textContent = 'Edit API Key';
+                
+                // Show the modal
+                addKeyModal.show();
+            }
+            
+            // Function to create a new API key or update an existing one
+            function saveApiKey() {
+                // Get form data
+                const keyId = document.getElementById('keyId').value;
+                let provider = providerSelect.value;
+                
+                // If "other" is selected, use the custom provider name
+                if (provider === 'other') {
+                    provider = otherProviderInput.value.trim();
+                    if (!provider) {
+                        alert('Please enter a provider name');
+                        return;
+                    }
+                }
+                
+                const keyName = document.getElementById('keyName').value.trim();
+                const apiKeyValue = document.getElementById('apiKey').value.trim();
+                const sessionDuration = parseInt(document.getElementById('sessionDuration').value, 10);
+                const expiration = document.getElementById('expiration').value;
+                const isDefault = document.getElementById('isDefault').checked;
+                
+                // Validate required fields
+                if (!provider || !keyName || !apiKeyValue) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // Prepare key data
+                const keyData = {
+                    id: keyId || undefined,  // Only include id if it exists
+                    name: keyName,
+                    key: apiKeyValue,
+                    expiration: expiration || undefined,
+                    is_default: isDefault,
+                };
+                
+                // Show loading state
+                saveKeyBtn.disabled = true;
+                saveKeyBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                
+                // Send request to server
+                fetch('/api/vault/save_key', {
+                    method: 'POST',
+                    headers: addAuthHeader({
+                        'Content-Type': 'application/json',
+                    }),
+                    body: JSON.stringify({
+                        provider: provider,
+                        key_data: keyData
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save API key');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide the modal
+                    addKeyModal.hide();
+                    
+                    // Reset the form
+                    apiKeyForm.reset();
+                    document.getElementById('keyId').value = '';
+                    document.getElementById('addKeyModalLabel').textContent = 'Add New API Key';
+                    
+                    // Reload keys
+                    loadApiKeys();
+                })
+                .catch(error => {
+                    console.error('Error saving API key:', error);
+                    alert(`Error saving API key: ${error.message}`);
+                })
+                .finally(() => {
+                    // Reset button state
+                    saveKeyBtn.disabled = false;
+                    saveKeyBtn.textContent = 'Save Key';
+                });
+            }
+            
+            // Function to delete an API key
+            function deleteApiKey(provider, keyId) {
+                // Hide confirmation modal
+                confirmModal.hide();
+                
+                fetch('/api/vault/delete_key', {
+                    method: 'DELETE',
+                    headers: addAuthHeader({
+                        'Content-Type': 'application/json',
+                    }),
+                    body: JSON.stringify({
+                        provider: provider,
+                        key_id: keyId
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete API key');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Reset the form
+                        apiKeyForm.reset();
+                        
+                        // Clear the localStorage entry if session_id is returned
+                        if (data.session_id && data.provider) {
+                            // Remove from localStorage
+                            localStorage.removeItem(`${data.provider}_session`);
+                            console.log(`Cleared session for provider: ${data.provider}`);
+                        }
+                        
+                        // Reload keys
+                        loadApiKeys();
+                    } else {
+                        throw new Error(data.message || 'Failed to delete key');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting API key:', error);
+                    alert(`Error deleting API key: ${error.message}`);
+                })
+                .finally(() => {
+                    // Clear current delete target
+                    deleteKeyData = null;
+                });
+            }
+            
+            // Function to clear all sessions
+            function clearAllSessions() {
+                // Hide confirmation modal
+                clearSessionsModal.hide();
+                
+                fetch('/api/vault/clear_sessions', {
+                    method: 'POST',
+                    headers: addAuthHeader({
+                        'Content-Type': 'application/json',
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to clear sessions');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Clear all provider sessions from localStorage
+                        if (data.providers && Array.isArray(data.providers)) {
+                            data.providers.forEach(provider => {
+                                localStorage.removeItem(`${provider}_session`);
+                                console.log(`Cleared session for provider: ${provider}`);
+                            });
+                        } else {
+                            // If no specific providers returned, clear all known providers
+                            const knownProviders = ['openai', 'anthropic', 'google', 'azure', 'other'];
+                            knownProviders.forEach(provider => {
+                                localStorage.removeItem(`${provider}_session`);
+                            });
+                            console.log("Cleared all provider sessions from localStorage");
+                        }
+                        
+                        // Reload keys
+                        loadApiKeys();
+                    } else {
+                        throw new Error('Failed to clear sessions');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error clearing sessions:', error);
+                    alert(`Error clearing sessions: ${error.message}`);
+                });
+            }
+        });
+
+        /**
+         * Get keys from the current session
+         * @param {string} provider - Optional provider filter
+         * @returns {Promise<Object>} Keys data
+         */
+        async function getSessionKeys(provider = null) {
+            try {
+                let url = '/api/vault/get_keys';
+                if (provider) {
+                    url += `?provider=${encodeURIComponent(provider)}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: addAuthHeader(),
+                    credentials: 'include' // Important for cookie handling
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    console.error('Error getting keys:', data.error);
+                    return null;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error retrieving keys:', error);
+                return null;
+            }
+        }
+
+        // Example usage in your frontend code:
+        async function displayKeys(provider = null) {
+            const keysData = await getSessionKeys(provider);
+            
+            if (!keysData || !keysData.success) {
+                console.error('Failed to get keys:', keysData?.error || 'Unknown error');
+                return;
+            }
+            
+            // Example of displaying keys in HTML
+            const keysContainer = document.getElementById('keys-container');
+            if (!keysContainer) return;
+            
+            let html = `
+                <h3>Session Keys</h3>
+                <p>Session ID: ${keysData.session_id}</p>
+                <p>Expires: ${new Date(keysData.expires_at).toLocaleString()}</p>
+            `;
+            
+            if (keysData.keys.length === 0) {
+                html += '<p>No keys found for this session.</p>';
+            } else {
+                html += '<div class="keys-list">';
+                keysData.keys.forEach(key => {
+                    html += `
+                        <div class="key-item">
+                            <h4>${key.name || 'Unnamed Key'}</h4>
+                            <p>Provider: ${key.provider || 'Unknown'}</p>
+                            <p>Key: ${key.masked_key}</p>
+                            <p>Created: ${new Date(key.created_at).toLocaleString()}</p>
+                            ${key.is_default ? '<span class="default-badge">Default</span>' : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            keysContainer.innerHTML = html;
+        }
+
+        // Add this helper function at the start of your script
+        function addAuthHeader(headers = {}) {
+            const token = localStorage.getItem('access_token');
+            return {
+                ...headers,
+                'Authorization': `Bearer ${token}`
+            };
+        }
+    </script>
+</body>
+</html> 

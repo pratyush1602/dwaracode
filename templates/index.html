@@ -1,0 +1,3338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Launch</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dvara-primary: #2C5282;    /* Deep blue - primary color */
+            --dvara-secondary: #4299E1;  /* Lighter blue - secondary color */
+            --dvara-accent: #EDF2F7;    /* Light gray-blue - background accent */
+            --dvara-text: #2D3748;      /* Dark gray - text color */
+        }
+
+        .navbar-brand img {
+            /* Remove the brightness/invert filter */
+            /* filter: brightness(0) invert(1); */ /* Comment out or remove this line */
+            max-height: 30px;
+            width: auto;
+            /* Add some contrast in case the logo is light */
+            background-color: white;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+
+        .navbar {
+            background-color: var(--dvara-primary) !important;
+            /* Add some transparency if needed */
+            /* background-color: rgba(44, 82, 130, 0.95) !important; */
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        .btn-primary {
+            background-color: var(--dvara-primary);
+            border-color: var(--dvara-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dvara-secondary);
+            border-color: var(--dvara-secondary);
+        }
+
+        .card {
+            border-color: var(--dvara-accent);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            background-color: var(--dvara-accent);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* File Viewer Styles */
+        .file-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1050;
+            display: none;
+        }
+
+        .file-viewer-header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .file-viewer-content {
+            display: flex;
+            height: calc(100vh - 70px);
+            background-color: white;
+        }
+
+        .file-viewer-sidebar {
+            width: 300px;
+            border-right: 1px solid #dee2e6;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+
+        .file-viewer-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .file-viewer-toolbar {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .file-viewer-container {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+            background-color: #fff;
+        }
+
+        .file-viewer-container pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .file-section li {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+
+        .file-section li:hover {
+            background-color: #e9ecef;
+        }
+
+        .file-section li.active {
+            background-color: #e9ecef;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: calc(100vh - 200px);
+            display: block;
+            margin: 0 auto;
+        }
+        #fileViewer.modal.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#fileViewer .modal-content {
+    height: 100vh;
+}
+
+#fileViewer .modal-body {
+    height: calc(100vh - 116px); /* Adjust for header and footer */
+}
+
+#fileViewer pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+#fileViewer .list-group-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#fileViewer .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="/static/js/logo.png" alt="Dvara Logo" height="30" class="d-inline-block align-text-top me-2">
+                Prompt Launch
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-light" onclick="openHistoryPanel()">
+                            <i class="bi bi-clock-history me-2"></i>History
+                        </button>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-light" onclick="openConfigPanel()">
+                            <i class="bi bi-gear me-2"></i>Configuration
+                        </button>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="/key-management" class="btn btn-light" id="apiKeysBtn">
+                            <i class="bi bi-key me-2"></i> API Keys
+                        </a>
+                    </li>
+
+                    <li class="nav-item ms-2">
+                        <button onclick="handleLogout()" class="btn btn-danger" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+   
+
+    <div class="container mb-5">
+        <!-- Main Content -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Analysis Form Card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-search me-2"></i>Analysis Parameters
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="analysisForm">
+                            <div class="mb-3">
+                                <label for="taskType" class="form-label">Task Type:</label>
+                                <select id="taskType" name="task_type" class="form-select" required>
+                                    <option value="">Select a task type</option>
+                                    {% for task_type in task_types %}
+                                    <option value="{{ task_type }}">{{ task_type|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="model" class="form-label">Model (Optional):</label>
+                                <select id="model" name="model" class="form-select">
+                                    <option value="">Default Model</option>
+                                    {% for model_id, display_name in models.items() %}
+                                    <option value="{{ model_id }}">{{ display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Input:</label>
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <!-- File Preview Area -->
+                                    <div id="filePreview" class="mb-3" style="display: none;">
+                                        <div class="d-flex align-items-center p-2 bg-white rounded border">
+                                            <i class="bi bi-file-earmark me-2"></i>
+                                            <span id="fileName" class="flex-grow-1"></span>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Text Input -->
+                                    <textarea 
+                                        id="textContent" 
+                                        name="text_content" 
+                                        class="form-control border-0 bg-white mb-2" 
+                                        rows="4" 
+                                        placeholder="Enter your text here or upload a file..."
+                                        style="resize: none;"
+                                    ></textarea>
+
+                                    <!-- File Input and Actions -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <label class="btn btn-outline-secondary btn-sm" for="file">
+                                                <i class="bi bi-paperclip me-1"></i>Upload File
+                                            </label>
+                                            <input 
+                                                type="file" 
+                                                id="file" 
+                                                name="file" 
+                                                class="d-none" 
+                                                accept=".log,.txt,.json,.pdf,image/*"
+                                            >
+                                        </div>
+                                        <small class="text-muted">Supported: .log, .txt, .json, .pdf, images</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-lightning-charge me-2"></i>Analyze
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Image Analysis Card -->
+                
+
+                <!-- Loading Indicator -->
+                <div id="loading" class="d-none text-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-primary">Analyzing... Please wait...</p>
+                </div>
+
+                <!-- Results Card -->
+                <div id="resultCard" class="card mb-4" style="display: none;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-text me-2"></i>Analysis Results
+                        </h5>
+                        <div id="downloadSection" class="d-flex align-items-center">
+                            <select id="downloadFormat" class="form-select form-select-sm me-2" style="width: auto;">
+                                <option value="txt">Text (.txt)</option>
+                                <option value="json">JSON (.json)</option>
+                                <option value="html">HTML (.html)</option>
+                            </select>
+                            <button id="downloadBtn" class="btn btn-sm btn-success">
+                                <i class="bi bi-download me-1"></i>Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="result" class="p-3"></div>
+                    </div>
+                </div>
+
+                <!-- Saved Files Card -->
+                <div id="savedFiles" class="card" style="display: none;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-folder me-2"></i>Saved Files
+                        </h5>
+                        <button onclick="openFileViewer()" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye me-1"></i>View Files
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">Request Files:</h6>
+                                <ul id="requestFilesList" class="list-unstyled"></ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">Response Files:</h6>
+                                <ul id="responseFilesList" class="list-unstyled"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Viewer Modal -->
+    <div id="fileViewer" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-text me-2"></i>File Viewer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-3 border-end bg-light">
+                            <div class="p-3">
+                                <h6 class="border-bottom pb-2 mb-3">Request Files</h6>
+                                <ul id="requestFilesView" class="list-group list-group-flush"></ul>
+                            </div>
+                            <div class="p-3">
+                                <h6 class="border-bottom pb-2 mb-3">Response Files</h6>
+                                <ul id="responseFilesView" class="list-group list-group-flush"></ul>
+                            </div>
+                        </div>
+                        <div class="col-md-9 d-flex flex-column">
+                            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                <span id="currentFileName" class="fw-bold">No file selected</span>
+                                <button id="downloadCurrentFile" class="btn btn-sm btn-success" style="display: none;">
+                                    <i class="bi bi-download me-1"></i>Download
+                                </button>
+                            </div>
+                            <div class="p-3 flex-grow-1 overflow-auto">
+                                <pre id="fileContent">Select a file to view its contents</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyPanel" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Analysis History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-3 border-end">
+                            <div class="list-group list-group-flush" id="historyList">
+                                <!-- History items will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div id="historyFileViewer" class="h-100 d-flex flex-column" style="display: none;">
+                                <div class="row g-0 h-100">
+                                    <div class="col-md-3 border-end bg-light">
+                                        <div class="p-3">
+                                            <h6 class="border-bottom pb-2 mb-3">Request Files</h6>
+                                            <ul id="historyRequestFiles" class="list-group list-group-flush"></ul>
+                                        </div>
+                                        <div class="p-3">
+                                            <h6 class="border-bottom pb-2 mb-3">Response Files</h6>
+                                            <ul id="historyResponseFiles" class="list-group list-group-flush"></ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9 d-flex flex-column">
+                                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                            <span id="historyFileName" class="fw-bold">No file selected</span>
+                                            <button id="historyDownloadFile" class="btn btn-sm btn-success" style="display: none;">
+                                                <i class="bi bi-download me-1"></i>Download
+                                            </button>
+                                        </div>
+                                        <div class="p-3 flex-grow-1 overflow-auto">
+                                            <pre id="historyFileContent">Select a file to view its contents</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="configPanel" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Configuration Editor</h5>
+                    <div>
+                        <button onclick="viewConfigHistory()" class="btn btn-secondary me-2">
+                            <i class="bi bi-clock-history me-1"></i>View History
+                        </button>
+                        <button onclick="saveConfig()" class="btn btn-success me-2">
+                            <i class="bi bi-save me-1"></i>Save Changes
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-3 border-end">
+                            <div class="p-3">
+                                <ul class="nav nav-tabs mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="types-tab" data-bs-toggle="tab" data-bs-target="#typesPanel" type="button" role="tab">Task Types</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="models-tab" data-bs-toggle="tab" data-bs-target="#modelsPanel" type="button" role="tab">Models</button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="typesPanel" role="tabpanel">
+                                        <h6 class="border-bottom pb-2 mb-3">Task Types</h6>
+                                        <!-- Add search input for task types -->
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control form-control-sm" id="taskTypeSearch" 
+                                                   placeholder="Search task types...">
+                                        </div>
+                                        <ul id="configTypesList" class="list-group mb-3"></ul>
+                                        <button onclick="addNewTaskType()" class="btn btn-sm btn-primary w-100">
+                                            <i class="bi bi-plus-lg me-1"></i>Add Task Type
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="modelsPanel" role="tabpanel">
+                                        <h6 class="border-bottom pb-2 mb-3">Available Models</h6>
+                                        <!-- Add search input for models -->
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control form-control-sm" id="modelSearch" 
+                                                   placeholder="Search models...">
+                                        </div>
+                                        <ul id="modelsList" class="list-group mb-3"></ul>
+                                        <button onclick="addNewModel()" class="btn btn-sm btn-primary w-100">
+                                            <i class="bi bi-plus-lg me-1"></i>Add Model
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div id="configEditor" class="p-4">
+                                <div class="editor-header mb-4">
+                                    <h4 id="currentTaskType" class="border-bottom pb-2">Select a task type</h4>
+                                </div>
+                                <div class="editor-content">
+                                    <div class="mb-3">
+                                        <label for="promptEditor" class="form-label">Prompt Template:</label>
+                                        <textarea id="promptEditor" class="form-control" rows="15"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="modelSelect" class="form-label">Model:</label>
+                                        <select id="modelSelect" name="model" class="form-select">
+                                            {% for model in models %}
+                                            <option value="{{ model }}">{{ model }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Configuration Modal -->
+    <div id="modelPanel" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-cpu me-2"></i>Model Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="model-form">
+                        <div class="mb-3">
+                            <label for="modelId" class="form-label">Model ID:</label>
+                            <input type="text" id="modelId" class="form-control" placeholder="e.g., gpt-4, claude-3">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modelName" class="form-label">Display Name:</label>
+                            <input type="text" id="modelName" class="form-control" placeholder="e.g., GPT-4, Claude 3">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modelProvider" class="form-label">Provider:</label>
+                            <select id="modelProvider" class="form-select">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="google">Google</option>
+                                <option value="deepinfra">DeepInfra</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modelMaxTokens" class="form-label">Max Tokens:</label>
+                            <input type="number" id="modelMaxTokens" class="form-control" placeholder="e.g., 4096">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Capabilities:</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="modelCapText" class="form-check-input">
+                                <label for="modelCapText" class="form-check-label">Text Generation</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="modelCapCode" class="form-check-input">
+                                <label for="modelCapCode" class="form-check-label">Code Analysis</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="modelCapImage" class="form-check-input">
+                                <label for="modelCapImage" class="form-check-label">Image Analysis</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button onclick="saveModelForm()" class="btn btn-success">Save Model</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config History Modal -->
+    <div id="configHistoryPanel" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Configuration History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-3 border-end">
+                            <div class="list-group list-group-flush" id="configHistoryList">
+                                <!-- Config history items will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="col-md-9 d-flex flex-column">
+                            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                <span id="configVersionInfo" class="fw-bold">Select a version</span>
+                                <button onclick="restoreConfig()" class="btn btn-success">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restore This Version
+                                </button>
+                            </div>
+                            <div class="p-3 flex-grow-1 overflow-auto">
+                                <pre id="configHistoryContent" class="bg-light p-3 rounded">Select a version from the history to view details</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vault Modal -->
+    <div id="vaultModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-key me-2"></i>API Key Vault</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="vaultForm">
+                        <div class="mb-3">
+                            <label for="vaultProvider" class="form-label">Provider:</label>
+                            <select id="vaultProvider" class="form-select" required>
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="google">Google</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vaultApiKey" class="form-label">API Key:</label>
+                            <input type="password" id="vaultApiKey" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vaultDuration" class="form-label">Session Duration (hours):</label>
+                            <input type="number" id="vaultDuration" class="form-control" value="24" min="1" max="168">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createVaultSessionBtn">Create Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+
+async function handleLogout() {
+    try {
+        // Clear local storage
+        localStorage.removeItem('access_token');
+        
+        // Clear any other stored session data
+        Object.keys(localStorage).forEach(key => {
+            if (key.endsWith('_session')) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Optional: Call backend to invalidate session
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: addAuthHeader()
+            });
+        } catch (error) {
+            console.error('Error logging out on server:', error);
+            // Continue with logout even if server request fails
+        }
+
+        // Show success message
+        showToast('success', 'Logged out successfully');
+
+        // Redirect to login page after a brief delay
+        window.location.href = '/login';
+
+    } catch (error) {
+        console.error('Error during logout:', error);
+            showToast('error', 'Error during logout');
+        }
+    }
+
+         // Handle file selection and preview
+         document.getElementById('file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const filePreview = document.getElementById('filePreview');
+            const fileName = document.getElementById('fileName');
+            
+            if (file) {
+                fileName.textContent = file.name;
+                filePreview.style.display = 'block';
+            }
+        });
+
+        // Remove selected file
+        function removeFile() {
+            const fileInput = document.getElementById('file');
+            const filePreview = document.getElementById('filePreview');
+            
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+        }
+
+        // Form validation
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            const textContent = document.getElementById('textContent').value.trim();
+            const fileInput = document.getElementById('file');
+            
+            if (!textContent && !fileInput.files[0]) {
+                e.preventDefault();
+                alert('Please enter text or upload a file');
+            }
+        });
+
+        let currentFiles = null;
+        let currentConfig = null;
+        let currentTaskType = null;
+        let currentModels = {};
+        let currentEditingModel = null;
+        let currentConfigHistory = null;
+        let selectedConfigVersion = null;
+
+        // Add a global modals object to store all modal instances
+        let modals = {};
+
+        // Initialize all modals when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all modals
+            const modalElements = document.querySelectorAll('.modal');
+            modalElements.forEach(modalElement => {
+                const modalId = modalElement.id;
+                modals[modalId] = new bootstrap.Modal(modalElement);
+            });
+
+            // Add event listeners for modal buttons
+            const modalButtons = {
+                'historyPanel': document.querySelector('button[onclick="openHistoryPanel()"]'),
+                'configPanel': document.querySelector('button[onclick="openConfigPanel()"]'),
+                'configHistoryPanel': document.querySelector('button[onclick="viewConfigHistory()"]'),
+                'vaultModal': document.getElementById('openVaultBtn')
+            };
+
+            // Set up click handlers for modal buttons
+            Object.entries(modalButtons).forEach(([modalId, button]) => {
+                if (button) {
+                    button.addEventListener('click', () => openModal(modalId));
+                }
+            });
+
+            // Add close button handlers
+            document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const modalId = this.closest('.modal').id;
+                    closeModal(modalId);
+                });
+            });
+
+            // Add backdrop click handlers
+            modalElements.forEach(modalElement => {
+                modalElement.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal(this.id);
+                    }
+                });
+            });
+
+            // Add global escape key handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    Object.values(modals).forEach(modal => {
+                        modal.hide();
+                    });
+                }
+            });
+
+            // Initialize other event listeners and functionality
+            setupKeyManagementEvents();
+            initializeKeyManagement();
+
+            // Analysis form handling - SINGLE form submission handler
+            const analysisForm = document.getElementById('analysisForm');
+            if (analysisForm) {
+                analysisForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const textContent = document.getElementById('textContent').value.trim();
+                    const fileInput = document.getElementById('file');
+                    const formData = new FormData();
+                    
+                    // Add task type and model to formData
+                    formData.append('task_type', document.getElementById('taskType').value);
+                    const model = document.getElementById('model')?.value;
+                    if (model) {
+                        formData.append('model', model);
+                    }
+                    
+                    // Add custom prompt if it exists and is enabled
+                    const customPromptTextarea = document.getElementById('customPrompt');
+                    const useCustomPrompt = document.getElementById('useCustomPrompt');
+                    if (customPromptTextarea && useCustomPrompt && useCustomPrompt.checked) {
+                        formData.append('custom_prompt', customPromptTextarea.value);
+                    }
+                    
+                    // If there's text content, create a text file and append it
+                    if (textContent) {
+                        const textBlob = new Blob([textContent], { type: 'text/plain' });
+                        formData.append('file', textBlob, 'input.txt');
+                    }
+                    // If there's a file selected, append it
+                    else if (fileInput.files[0]) {
+                        formData.append('file', fileInput.files[0]);
+                    }
+                    else {
+                        showToast('error', 'Please enter text or upload a file');
+                        return;
+                    }
+                    
+                    try {
+                        const loading = document.getElementById('loading');
+                        const result = document.getElementById('result');
+                        const resultCard = document.getElementById('resultCard');
+                        const savedFiles = document.getElementById('savedFiles');
+                        
+                        if (loading) loading.classList.remove('d-none');
+                        if (result) result.textContent = '';
+                        if (resultCard) resultCard.style.display = 'none';
+                        if (savedFiles) savedFiles.style.display = 'none';
+
+                        const response = await fetch('/api/analyze/', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'include',
+                            headers: addAuthHeader(true)
+                        });
+
+                        const data = await response.json();
+                        
+                        if (!response.ok) {
+                            throw new Error(data.detail || 'Analysis failed');
+                        }
+
+                        // Format and display the response
+                result.innerHTML = `
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">Model</span>
+                            <span>${data.used_model}</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-secondary me-2">Task</span>
+                            <span>${data.log_type}</span>
+                        </div>
+                    </div>
+                    <div class="border-top pt-3">
+                        ${formatResponse(data.response)}
+                    </div>
+                `;
+
+                // Show saved files
+                const requestFilesList = document.getElementById('requestFilesList');
+                const responseFilesList = document.getElementById('responseFilesList');
+                if (data.saved_files) {
+                    // Display request files
+                    if (data.saved_files.request) {
+                        requestFilesList.innerHTML = Object.entries(data.saved_files.request)
+                            .map(([type, path]) => `
+                                <li class="mb-2">
+                                    <span class="badge bg-secondary me-2">${type.toUpperCase()}</span>
+                                    ${path.split('/').pop()}
+                                </li>
+                            `).join('');
+                    }
+                    
+                    // Display response files
+                    if (data.saved_files.response) {
+                        responseFilesList.innerHTML = Object.entries(data.saved_files.response)
+                            .map(([type, path]) => `
+                                <li class="mb-2">
+                                    <span class="badge bg-primary me-2">${type.toUpperCase()}</span>
+                                    ${path.split('/').pop()}
+                                </li>
+                            `).join('');
+                    }
+                    
+                    savedFiles.style.display = 'block';
+                    currentFiles = data.saved_files;
+                    renderFileList(data.saved_files);
+                }
+
+                // Show result card and download section
+                    resultCard.style.display = 'block';
+
+                    // Add click handler for download button
+                    document.getElementById('downloadBtn').onclick = () => {
+                        const format = document.getElementById('downloadFormat').value;
+                        downloadResponse(data, format);
+                    };
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showToast('error', error.message || 'Error processing request');
+                    } finally {
+                        if (loading) loading.classList.add('d-none');
+                    }
+                });
+            }
+        });
+
+        // Update modal open/close functions to use the global modals object
+        function openModal(modalId) {
+            if (modals[modalId]) {
+                modals[modalId].show();
+            }
+        }
+
+        function closeModal(modalId) {
+            if (modals[modalId]) {
+                modals[modalId].hide();
+            }
+        }
+
+        // Update specific modal functions
+        function openHistoryPanel() {
+            openModal('historyPanel');
+        }
+
+        function closeHistoryPanel() {
+            closeModal('historyPanel');
+        }
+
+        function openConfigPanel() {
+            openModal('configPanel');
+        }
+
+        function closeConfigPanel() {
+            closeModal('configPanel');
+        }
+
+        function openConfigHistory() {
+            openModal('configHistoryPanel');
+        }
+
+        function closeConfigHistory() {
+            closeModal('configHistoryPanel');
+            selectedConfigVersion = null;
+        }
+
+        async function viewFile(path, type) {
+            const fileContent = document.getElementById('fileContent');
+            const currentFileName = document.getElementById('currentFileName');
+            const downloadBtn = document.getElementById('downloadCurrentFile');
+            
+            try {
+                // Update active state in sidebar
+                document.querySelectorAll('.file-section li').forEach(li => {
+                    li.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                currentFileName.textContent = path.split('/').pop();
+                downloadBtn.style.display = 'block';
+                downloadBtn.onclick = () => downloadFile(path);
+
+                // Handle different file types
+                if (path.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                    // Image preview
+                    fileContent.innerHTML = `<img src="${path}" class="image-preview" alt="Image preview">`;
+                } else if (path.match(/\.pdf$/i)) {
+                    // PDF preview - we'll use an embed tag for better display
+                    fileContent.innerHTML = `<embed src="${path}" type="application/pdf" width="100%" height="600px">`;
+                } else {
+                    // Text content
+                    const response = await fetch(path);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const content = await response.text();
+                    
+                    if (path.endsWith('.json')) {
+                        // Format JSON
+                        try {
+                            const jsonContent = JSON.parse(content);
+                            fileContent.textContent = JSON.stringify(jsonContent, null, 2);
+                        } catch (e) {
+                            fileContent.textContent = content;
+                        }
+                    } else {
+                        fileContent.textContent = content;
+                    }
+                }
+            } catch (error) {
+                console.error('Error viewing file:', error);
+                fileContent.textContent = `Error loading file: ${error.message}`;
+                showToast('error', `Error loading file: ${error.message}`);
+            }
+        }
+
+        function renderFileList(files) {
+    const requestList = document.getElementById('requestFilesView');
+    const responseList = document.getElementById('responseFilesView');
+    
+    if (!files || (!files.request && !files.response)) {
+        const noFilesMessage = `
+            <li class="list-group-item text-muted text-center">
+                <i class="bi bi-info-circle me-2"></i>No files available
+            </li>
+        `;
+        requestList.innerHTML = noFilesMessage;
+        responseList.innerHTML = noFilesMessage;
+        return;
+    }
+    
+    // Render request files
+    if (files.request && Object.keys(files.request).length > 0) {
+        requestList.innerHTML = Object.entries(files.request)
+            .map(([type, path]) => `
+                <li class="list-group-item d-flex align-items-center" onclick="viewFile('${path}', '${type}')">
+                    <span class="badge bg-secondary me-2">${type.toUpperCase()}</span>
+                    <span class="text-truncate">${path.split('/').pop()}</span>
+                </li>
+            `).join('');
+    } else {
+        requestList.innerHTML = `
+            <li class="list-group-item text-muted text-center">
+                <i class="bi bi-info-circle me-2"></i>No request files
+            </li>
+        `;
+    }
+    
+    // Render response files
+    if (files.response && Object.keys(files.response).length > 0) {
+        responseList.innerHTML = Object.entries(files.response)
+            .map(([type, path]) => `
+                <li class="list-group-item d-flex align-items-center" onclick="viewFile('${path}', '${type}')">
+                    <span class="badge bg-primary me-2">${type.toUpperCase()}</span>
+                    <span class="text-truncate">${path.split('/').pop()}</span>
+                </li>
+            `).join('');
+    } else {
+        responseList.innerHTML = `
+            <li class="list-group-item text-muted text-center">
+                <i class="bi bi-info-circle me-2"></i>No response files
+            </li>
+        `;
+    }
+}
+
+        async function downloadFile(path) {
+            try {
+                const response = await fetch(path);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = path.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert(`Error downloading file: ${error.message}`);
+            }
+        }
+
+        function downloadResponse(data, format) {
+            let content = '';
+            let filename = `analysis_response_${new Date().toISOString().slice(0,19).replace(/[:]/g, '-')}`;
+            let mimeType = '';
+
+            switch (format) {
+                case 'json':
+                    content = JSON.stringify({
+                        model_used: data.used_model,
+                        task_type: data.log_type,
+                        response: data.response,
+                        timestamp: new Date().toISOString()
+                    }, null, 2);
+                    filename += '.json';
+                    mimeType = 'application/json';
+                    break;
+
+                case 'html':
+                    content = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Analysis Response</title>
+                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+                            <style>
+                                body { font-family: 'Poppins', sans-serif; padding: 20px; }
+                                pre { white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 5px; }
+                                .container { max-width: 800px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h2 class="mb-4">Analysis Response</h2>
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <p><strong>Model Used:</strong> ${data.used_model}</p>
+                                        <p><strong>Task Type:</strong> ${data.log_type}</p>
+                                        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">Response</div>
+                                    <div class="card-body">
+                                        <pre>${data.response}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                    `;
+                    filename += '.html';
+                    mimeType = 'text/html';
+                    break;
+
+                default: // txt
+                    content = `Analysis Response
+Model Used: ${data.used_model}
+Task Type: ${data.log_type}
+Timestamp: ${new Date().toISOString()}
+\n=== Response ===\n
+${data.response}`;
+                    filename += '.txt';
+                    mimeType = 'text/plain';
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // Add this new function to handle task type selection
+        document.getElementById('taskType').addEventListener('change', async function() {
+            const selectedTaskType = this.value;
+            if (!selectedTaskType) return;
+            
+            try {
+                // If we don't have the config yet, fetch it
+                if (!currentConfig) {
+                    const response = await fetch('/api/config',{
+                        headers: addAuthHeader()
+                    });
+                    if(response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        currentConfig = data.config;
+                    } else {
+                        throw new Error(data.message || 'Failed to load configuration');
+                    }
+                }
+                
+                // Get the task configuration from the cached config
+                if (currentConfig && currentConfig[selectedTaskType] && currentConfig[selectedTaskType][0]) {
+                    const taskConfig = currentConfig[selectedTaskType][0];
+                    
+                    // Create or update the prompt editor section
+                    let promptEditorSection = document.getElementById('promptEditorSection');
+                    if (!promptEditorSection) {
+                        // Create the prompt editor section if it doesn't exist
+                        const formGroup = document.createElement('div');
+                        formGroup.id = 'promptEditorSection';
+                        formGroup.className = 'mb-3';
+                        formGroup.innerHTML = `
+                            <label for="customPrompt" class="form-label">Prompt Template: <span class="text-muted small">(You can modify this)</span></label>
+                            <div class="card">
+                                <div class="card-body p-0">
+                                    <textarea id="customPrompt" class="form-control border-0" rows="6" 
+                                              style="resize: vertical; border-radius: 10px;"></textarea>
+                                </div>
+                                <div class="card-footer bg-light d-flex justify-content-between align-items-center p-2">
+                                    <button id="resetPromptBtn" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                                    </button>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="useCustomPrompt" checked>
+                                        <label class="form-check-label" for="useCustomPrompt">Use Custom Prompt</label>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Insert after the task type selection
+                        const taskTypeField = document.querySelector('#taskType').closest('.mb-3');
+                        taskTypeField.parentNode.insertBefore(formGroup, taskTypeField.nextSibling);
+                        
+                        // Add event listener for reset button
+                        document.getElementById('resetPromptBtn').addEventListener('click', function() {
+                            if (currentConfig && currentConfig[selectedTaskType] && currentConfig[selectedTaskType][0]) {
+                                document.getElementById('customPrompt').value = currentConfig[selectedTaskType][0].prompt;
+                            }
+                        });
+                    }
+                    
+                    // Update the prompt content
+                    document.getElementById('customPrompt').value = taskConfig.prompt;
+                    
+                    // Set the default model in the dropdown
+                    if (taskConfig.model) {
+                        document.getElementById('model').value = taskConfig.model;
+                    }
+                } else {
+                    console.warn(`No configuration found for task type: ${selectedTaskType}`);
+                }
+            } catch (error) {
+                console.error('Error loading task configuration:', error);
+            }
+        });
+
+        function formatResponse(response) {
+            // Escape HTML to prevent XSS
+            const escaped = response
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            
+            // Add syntax highlighting for code blocks if they exist
+            return escaped.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                return `<div class="code-block bg-light p-3 rounded mb-3 mt-3 border-start border-primary border-3">${code}</div>`;
+            });
+        }
+
+        async function openHistoryPanel() {
+            try {
+                const response = await fetch('/api/analyze/history',{
+                    headers: addAuthHeader()
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                
+                const historyList = document.getElementById('historyList');
+                
+                if (data.status === 'error') {
+                    historyList.innerHTML = `
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-exclamation-circle display-4 mb-3"></i>
+                            <p>Error loading history: ${data.message || 'Unknown error'}</p>
+                        </div>`;
+                    openModal('historyPanel');
+                    return;
+                }
+                
+                const sessions = data.sessions || [];
+                
+                if (sessions.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-clock display-4 mb-3"></i>
+                            <p>No analysis history found</p>
+                            <p>Analyze some files to see them here</p>
+                        </div>`;
+                } else {
+                    historyList.innerHTML = sessions.map(session => `
+                        <a href="#" class="list-group-item list-group-item-action" 
+                           onclick="viewHistorySession('${session.path}', ${JSON.stringify(session.files).replace(/"/g, '&quot;')})">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">${session.task_type}</h6>
+                                <small>${new Date(session.timestamp).toLocaleDateString()}</small>
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>${new Date(session.timestamp).toLocaleTimeString()}
+                            </small>
+                            <small class="d-block">
+                                <i class="bi bi-files me-1"></i>${session.files.request.length + session.files.response.length} files
+                            </small>
+                        </a>
+                    `).join('');
+                }
+                
+                openModal('historyPanel');
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('historyList').innerHTML = `
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-exclamation-triangle display-4 mb-3"></i>
+                        <p>Error loading history</p>
+                        <p>${error.message}</p>
+                    </div>`;
+                openModal('historyPanel');
+            }
+        }
+
+        function closeHistoryPanel() {
+            closeModal('historyPanel');
+        }
+
+        function viewHistorySession(sessionPath, files) {
+            // Update active state
+            document.querySelectorAll('.list-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Show file viewer
+            document.getElementById('historyFileViewer').style.display = 'flex';
+
+            // Update file lists
+            const requestList = document.getElementById('historyRequestFiles');
+            const responseList = document.getElementById('historyResponseFiles');
+
+            requestList.innerHTML = files.request.map(file => `
+                <li class="list-group-item list-group-item-action" onclick="viewHistoryFile('data/ocr/${file}')">
+                    ${file.split('/').pop()}
+                </li>
+            `).join('');
+
+            responseList.innerHTML = files.response.map(file => `
+                <li class="list-group-item list-group-item-action" onclick="viewHistoryFile('data/ocr/${file}')">
+                    ${file.split('/').pop()}
+                </li>
+            `).join('');
+        }
+
+        async function viewHistoryFile(filePath) {
+            const fileContent = document.getElementById('historyFileContent');
+            const fileName = document.getElementById('historyFileName');
+            const downloadBtn = document.getElementById('historyDownloadFile');
+
+            try {
+                // Update active state
+                document.querySelectorAll('.list-group-item-action').forEach(li => {
+                    li.classList.remove('active');
+                });
+                event.currentTarget.classList.add('active');
+
+                fileName.textContent = filePath.split('/').pop();
+                downloadBtn.style.display = 'block';
+                downloadBtn.onclick = () => downloadFile(filePath);
+
+                if (filePath.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                    fileContent.innerHTML = `<img src="/${filePath}" class="image-preview" alt="Image preview">`;
+                } else if (filePath.match(/\.pdf$/i)) {
+                    fileContent.innerHTML = `<embed src="/${filePath}" type="application/pdf" width="100%" height="600px">`;
+                } else {
+                    const response = await fetch('/' + filePath);
+                    const content = await response.text();
+
+                    if (filePath.endsWith('.json')) {
+                        try {
+                            const jsonContent = JSON.parse(content);
+                            fileContent.textContent = JSON.stringify(jsonContent, null, 2);
+                        } catch (e) {
+                            fileContent.textContent = content;
+                        }
+                    } else {
+                        fileContent.textContent = content;
+                    }
+                }
+            } catch (error) {
+                fileContent.textContent = `Error loading file: ${error.message}`;
+            }
+        }
+
+        async function openConfigPanel() {
+            try {
+                const response = await fetch('/api/config',{
+                    headers: addAuthHeader()
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    currentModels = data.config.models || {};
+                    renderConfigPanel();
+                    renderModelsList();
+                    openModal('configPanel');
+                } else {
+                    alert('Error loading configuration: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading configuration:', error);
+                alert('Error loading configuration: ' + error.message);
+            }
+        }
+
+        function closeConfigPanel() {
+            closeModal('configPanel');
+        }
+
+        function renderConfigPanel() {
+            const typesList = document.getElementById('configTypesList');
+            const types = Object.keys(currentConfig).filter(type => type !== 'models');
+            renderTaskTypes(types); // Use new helper function
+        }
+
+        // Add new helper function for rendering task types
+        function renderTaskTypes(types) {
+            const typesList = document.getElementById('configTypesList');
+            typesList.innerHTML = types.map(type => `
+                <li class="list-group-item d-flex justify-content-between align-items-center" 
+                    onclick="selectTaskType('${type}')" data-type="${type}">
+                    <span>${type}</span>
+                    <button onclick="deleteTaskType('${type}')" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        function selectTaskType(type) {
+            currentTaskType = type;
+            const config = currentConfig[type][0];
+            
+            document.querySelectorAll('#configTypesList li').forEach(li => {
+                li.classList.remove('active');
+                if (li.dataset.type === type) {
+                    li.classList.add('active');
+                }
+            });
+
+            document.getElementById('currentTaskType').textContent = type;
+            document.getElementById('promptEditor').value = config.prompt;
+            document.getElementById('modelSelect').value = config.model;
+        }
+
+        function addNewTaskType() {
+            const type = prompt('Enter new task type name:');
+            if (type) {
+                if (type.toLowerCase() === 'models') {
+                    alert('Cannot create a task type named "models"');
+                    return;
+                }
+                
+                if (currentConfig[type]) {
+                    alert('Task type already exists');
+                    return;
+                }
+                
+                currentConfig[type] = [{
+                    prompt: "Enter prompt template here...",
+                    model: "gpt-4"
+                }];
+                
+                renderConfigPanel();
+                selectTaskType(type);
+            }
+        }
+
+        function deleteTaskType(type) {
+            event.stopPropagation();
+            if (confirm(`Are you sure you want to delete ${type}?`)) {
+                delete currentConfig[type];
+                renderConfigPanel();
+                document.getElementById('currentTaskType').textContent = 'Select a task type';
+                document.getElementById('promptEditor').value = '';
+                currentTaskType = null;
+            }
+        }
+
+        function renderModelsList(filterText = '') {
+            const modelsList = document.getElementById('modelsList');
+            const filteredModels = Object.entries(currentModels).filter(([id, model]) => {
+                const searchText = filterText.toLowerCase();
+                return id.toLowerCase().includes(searchText) || 
+                       model.name.toLowerCase().includes(searchText) ||
+                       model.provider.toLowerCase().includes(searchText);
+            });
+
+            modelsList.innerHTML = filteredModels.map(([id, model]) => `
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${model.name}</strong>
+                            <div class="text-muted small">
+                                <span class="badge bg-light text-dark me-1">${model.provider}</span>
+                                <span class="badge bg-light text-dark">Max: ${model.maxTokens}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <button onclick="editModel('${id}')" class="btn btn-sm btn-warning me-1">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button onclick="deleteModel('${id}')" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function addNewModel() {
+            currentEditingModel = null;
+            clearModelForm();
+            openModal('modelPanel');
+        }
+
+        function editModel(modelId) {
+            currentEditingModel = modelId;
+            const model = currentModels[modelId];
+            
+            document.getElementById('modelId').value = modelId;
+            document.getElementById('modelName').value = model.name;
+            document.getElementById('modelProvider').value = model.provider;
+            document.getElementById('modelMaxTokens').value = model.maxTokens;
+            document.getElementById('modelCapText').checked = model.capabilities.includes('text');
+            document.getElementById('modelCapCode').checked = model.capabilities.includes('code');
+            document.getElementById('modelCapImage').checked = model.capabilities.includes('image');
+            
+            openModal('modelPanel');
+        }
+
+        function deleteModel(modelId) {
+            if (confirm(`Are you sure you want to delete ${currentModels[modelId].name}?`)) {
+                delete currentModels[modelId];
+                renderModelsList();
+                updateModelSelects();
+            }
+        }
+
+        function clearModelForm() {
+            document.getElementById('modelId').value = '';
+            document.getElementById('modelName').value = '';
+            document.getElementById('modelProvider').value = 'openai';
+            document.getElementById('modelMaxTokens').value = '';
+            document.getElementById('modelCapText').checked = true;
+            document.getElementById('modelCapCode').checked = false;
+            document.getElementById('modelCapImage').checked = false;
+        }
+
+        async function saveModelForm() {
+            const modelId = document.getElementById('modelId').value;
+            if (!modelId) {
+                alert('Model ID is required');
+                return;
+            }
+
+            const modelData = {
+                name: document.getElementById('modelName').value || modelId,
+                provider: document.getElementById('modelProvider').value,
+                maxTokens: parseInt(document.getElementById('modelMaxTokens').value) || 4096,
+                capabilities: [
+                    ...(document.getElementById('modelCapText').checked ? ['text'] : []),
+                    ...(document.getElementById('modelCapCode').checked ? ['code'] : []),
+                    ...(document.getElementById('modelCapImage').checked ? ['image'] : [])
+                ]
+            };
+
+            // Update the models object
+            currentModels[modelId] = modelData;
+
+            try {
+                // Save to server
+                const response = await fetch('/api/config/models/update', {
+                    method: 'POST',
+                    headers: addAuthHeader(),
+                    body: JSON.stringify(currentModels)
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    let toastContainer = document.getElementById('toast-container');
+                    if (!toastContainer) {
+                        toastContainer = document.createElement('div');
+                        toastContainer.id = 'toast-container';
+                        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+                        toastContainer.style.zIndex = '1080';
+                        document.body.appendChild(toastContainer);
+                    }
+                    
+                    // Create toast element
+                    const toastEl = document.createElement('div');
+                    toastEl.className = 'toast align-items-center text-white bg-success border-0';
+                    toastEl.setAttribute('role', 'alert');
+                    toastEl.setAttribute('aria-live', 'assertive');
+                    toastEl.setAttribute('aria-atomic', 'true');
+                    toastEl.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle me-2"></i>Configuration saved successfully
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    `;
+                    
+                    // Add toast to container
+                    toastContainer.appendChild(toastEl);
+                    
+                    // Initialize and show the toast
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    
+                    // Remove toast after it's hidden
+                    toastEl.addEventListener('hidden.bs.toast', function() {
+                        toastEl.remove();
+                    });
+                    renderModelsList();
+                    updateModelSelects();
+                    closeModal('modelPanel');
+                } else {
+                    throw new Error(data.message || 'Failed to save model');
+                }
+            } catch (error) {
+                console.error('Error saving model:', error);
+                alert('Error saving model: ' + error.message);
+            }
+        }
+
+        function updateModelSelects() {
+            const modelSelects = document.querySelectorAll('.form-select');
+            const options = Object.entries(currentModels).map(([id, model]) => 
+                `<option value="${id}">${model.name}</option>`
+            ).join('');
+            
+            modelSelects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = `<option value="">Select a model</option>${options}`;
+                select.value = currentValue;
+            });
+        }
+
+        async function saveConfig() {
+            if (currentTaskType) {
+                currentConfig[currentTaskType][0] = {
+                    prompt: document.getElementById('promptEditor').value,
+                    model: document.getElementById('modelSelect').value
+                };
+            }
+
+            currentConfig.models = currentModels;
+
+            try {
+                const response = await fetch('/api/config/update', {
+                    method: 'POST',
+                    headers: addAuthHeader(),
+                    body: JSON.stringify(currentConfig)
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Create toast container if it doesn't exist
+                    let toastContainer = document.getElementById('toast-container');
+                    if (!toastContainer) {
+                        toastContainer = document.createElement('div');
+                        toastContainer.id = 'toast-container';
+                        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+                        toastContainer.style.zIndex = '1080';
+                        document.body.appendChild(toastContainer);
+                    }
+                    
+                    // Create toast element
+                    const toastEl = document.createElement('div');
+                    toastEl.className = 'toast align-items-center text-white bg-success border-0';
+                    toastEl.setAttribute('role', 'alert');
+                    toastEl.setAttribute('aria-live', 'assertive');
+                    toastEl.setAttribute('aria-atomic', 'true');
+                    toastEl.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle me-2"></i>Configuration saved successfully
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    `;
+                    
+                    // Add toast to container
+                    toastContainer.appendChild(toastEl);
+                    
+                    // Initialize and show the toast
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    
+                    // Remove toast after it's hidden
+                    toastEl.addEventListener('hidden.bs.toast', function() {
+                        toastEl.remove();
+                    });
+                } else {
+                    alert('Error saving configuration: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                alert('Error saving configuration: ' + error.message);
+            }
+        }
+
+        async function viewConfigHistory() {
+            try {
+                const response = await fetch('/api/config/history',{
+                    headers: addAuthHeader()
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentConfigHistory = data.history;
+                    renderConfigHistory();
+                    openModal('configHistoryPanel');
+                } else {
+                    alert('Error loading configuration history: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading configuration history:', error);
+                alert('Error loading configuration history: ' + error.message);
+            }
+        }
+
+        function renderConfigHistory() {
+            const historyList = document.getElementById('configHistoryList');
+            historyList.innerHTML = currentConfigHistory.map((version, index) => `
+                <a href="#" class="list-group-item list-group-item-action" onclick="viewConfigVersion(${index})">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">Version ${index + 1}</h6>
+                        <small>${new Date(version.timestamp).toLocaleDateString()}</small>
+                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>${new Date(version.timestamp).toLocaleTimeString()}
+                    </small>
+                </a>
+            `).join('');
+
+            // Initialize the viewer with placeholder
+            document.getElementById('configHistoryContent').textContent = 'Select a version from the history to view details';
+            document.getElementById('configVersionInfo').textContent = 'Select a version';
+        }
+
+        function viewConfigVersion(index) {
+            selectedConfigVersion = currentConfigHistory[index];
+            
+            // Update UI
+            document.querySelectorAll('#configHistoryList a').forEach(a => {
+                a.classList.remove('active');
+            });
+            document.querySelectorAll('#configHistoryList a')[index].classList.add('active');
+            
+            // Show config content
+            document.getElementById('configVersionInfo').textContent = 
+                `Version from ${new Date(selectedConfigVersion.timestamp).toLocaleString()}`;
+            document.getElementById('configHistoryContent').textContent = 
+                JSON.stringify(selectedConfigVersion.config, null, 2);
+        }
+
+        async function restoreConfig() {
+            if (!selectedConfigVersion) return;
+            
+            if (confirm('Are you sure you want to restore this configuration version? Current changes will be lost.')) {
+                currentConfig = JSON.parse(JSON.stringify(selectedConfigVersion.config));
+                currentModels = currentConfig.models || {};
+                
+                renderConfigPanel();
+                renderModelsList();
+                
+                // Save the restored version
+                await saveConfig();
+                closeModal('configHistoryPanel');
+            }
+        }
+
+        function closeConfigHistory() {
+            closeModal('configHistoryPanel');
+            selectedConfigVersion = null;
+        }
+
+        // Update the task type dropdown in the form
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskTypeSelect = document.getElementById('taskType');
+            if (taskTypeSelect) {
+                const options = Array.from(taskTypeSelect.options);
+                options.forEach(option => {
+                    if (option.value === 'models') {
+                        taskTypeSelect.removeChild(option);
+                    }
+                });
+            }
+        });
+
+        // Initialize elements object with all necessary DOM references
+        // const elements = {
+        //     dropZone: document.getElementById('dropZone'),
+        //     fileInput: document.getElementById('fileInput'),
+        //     previewCanvas: document.getElementById('previewCanvas'),
+        //     questionSection: document.getElementById('questionSection'),
+        //     questionInput: document.getElementById('questionInput'),
+        //     askButton: document.getElementById('askButton'),
+        //     detectionResults: document.getElementById('detectionResults'),
+        //     answerText: document.getElementById('answerText'),
+        //     loadingSpinner: document.getElementById('loadingSpinner')
+        // };
+
+        // let currentImage = null;
+
+        // // Add drag and drop functionality
+        // elements.dropZone.addEventListener('dragover', (e) => {
+        //     e.preventDefault();
+        //     elements.dropZone.style.backgroundColor = '#f8f9fa';
+        // });
+
+        // elements.dropZone.addEventListener('dragleave', (e) => {
+        //     e.preventDefault();
+        //     elements.dropZone.style.backgroundColor = '';
+        // });
+
+        // elements.dropZone.addEventListener('drop', (e) => {
+        //     e.preventDefault();
+        //     elements.dropZone.style.backgroundColor = '';
+        //     const file = e.dataTransfer.files[0];
+        //     if (file) handleFileSelect(file);
+        // });
+
+        // elements.dropZone.addEventListener('click', () => {
+        //     elements.fileInput.click();
+        // });
+
+        // elements.fileInput.addEventListener('change', (e) => {
+        //     if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+        // });
+
+        // // Handle file selection
+        // function handleFileSelect(file) {
+        //     if (!file.type.startsWith('image/')) {
+        //         alert('Please select an image file');
+        //         return;
+        //     }
+
+        //     console.log('Selected file:', file.name, 'Type:', file.type, 'Size:', file.size);
+
+        //     const reader = new FileReader();
+        //     reader.onload = function(e) {
+        //         console.log('File loaded successfully');
+        //         currentImage = new Image();
+        //         currentImage.onload = function() {
+        //             console.log('Image loaded:', currentImage.width, 'x', currentImage.height);
+                    
+        //             // Set canvas size to match image (with max dimensions)
+        //             const maxWidth = 800;
+        //             const maxHeight = 600;
+        //             let width = currentImage.width;
+        //             let height = currentImage.height;
+                    
+        //             if (width > maxWidth) {
+        //                 height = (maxWidth * height) / width;
+        //                 width = maxWidth;
+        //             }
+        //             if (height > maxHeight) {
+        //                 width = (maxHeight * width) / height;
+        //                 height = maxHeight;
+        //             }
+                    
+        //             elements.previewCanvas.width = width;
+        //             elements.previewCanvas.height = height;
+        //             elements.previewCanvas.style.display = 'block';
+                    
+        //             const ctx = elements.previewCanvas.getContext('2d');
+        //             ctx.drawImage(currentImage, 0, 0, width, height);
+                    
+        //             // Show question section after image is loaded
+        //             elements.questionSection.style.display = 'block';
+        //         };
+        //         currentImage.onerror = function() {
+        //             console.error('Error loading image');
+        //             alert('Error loading image. Please try another file.');
+        //         };
+        //         currentImage.src = e.target.result;
+        //     };
+        //     reader.onerror = function() {
+        //         console.error('Error reading file');
+        //         alert('Error reading file. Please try again.');
+        //     };
+        //     reader.readAsDataURL(file);
+        // }
+
+        // // Handle asking questions about the image
+        // elements.askButton.addEventListener('click', async () => {
+        //     const question = elements.questionInput.value.trim();
+        //     if (!question) {
+        //         alert('Please enter a question');
+        //         return;
+        //     }
+
+        //     if (!elements.fileInput.files[0]) {
+        //         alert('Please select an image first');
+        //         return;
+        //     }
+
+        //     try {
+        //         elements.loadingSpinner.style.display = 'block';
+        //         elements.askButton.disabled = true;
+        //         elements.detectionResults.style.display = 'none';
+
+        //         // Create a FormData object to send the file and question
+        //         const formData = new FormData();
+        //         formData.append('file', elements.fileInput.files[0]);
+        //         formData.append('question', question);
+
+        //         // Send the request to the server
+        //         const response = await fetch('/api/detection/ask', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+
+        //         // Check if the response is OK
+        //         if (!response.ok) {
+        //             const errorData = await response.json();
+        //             throw new Error(errorData.error || 'Server error');
+        //         }
+
+        //         const data = await response.json();
+
+        //         // Display the answer
+        //         elements.detectionResults.style.display = 'block';
+        //         elements.answerText.innerHTML = `
+        //             <div class="alert alert-success">
+        //                 <h6>Answer:</h6>
+        //                 <p class="mb-2">${data.answer}</p>
+        //                 <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(2)}%</small>
+        //             </div>
+        //         `;
+
+        //     } catch (error) {
+        //         console.error('Error:', error);
+        //         elements.detectionResults.style.display = 'block';
+        //         elements.answerText.innerHTML = `
+        //             <div class="alert alert-danger">
+        //                 <h6>Error:</h6>
+        //                 <p>${error.message || 'Error processing question'}</p>
+        //             </div>
+        //         `;
+        //     } finally {
+        //         elements.loadingSpinner.style.display = 'none';
+        //         elements.askButton.disabled = false;
+        //     }
+        // });
+
+        // // Document analysis elements
+        // const docElements = {
+        //     dropZone: document.getElementById('docDropZone'),
+        //     fileInput: document.getElementById('docFileInput'),
+        //     previewCanvas: document.getElementById('docPreviewCanvas'),
+        //     analysisOptions: document.getElementById('docAnalysisOptions'),
+        //     identifyBtn: document.getElementById('identifyDocBtn'),
+        //     questionInput: document.getElementById('docQuestionInput'),
+        //     askButton: document.getElementById('docAskButton'),
+        //     results: document.getElementById('docResults'),
+        //     resultText: document.getElementById('docResultText'),
+        //     loadingSpinner: document.getElementById('docLoadingSpinner')
+        // };
+
+        // let currentDocImage = null;
+
+        // // Add drag and drop functionality for documents
+        // docElements.dropZone.addEventListener('dragover', (e) => {
+        //     e.preventDefault();
+        //     docElements.dropZone.style.backgroundColor = '#f8f9fa';
+        // });
+
+        // docElements.dropZone.addEventListener('dragleave', (e) => {
+        //     e.preventDefault();
+        //     docElements.dropZone.style.backgroundColor = '';
+        // });
+
+        // docElements.dropZone.addEventListener('drop', (e) => {
+        //     e.preventDefault();
+        //     docElements.dropZone.style.backgroundColor = '';
+        //     const file = e.dataTransfer.files[0];
+        //     if (file) handleDocFileSelect(file);
+        // });
+
+        // docElements.dropZone.addEventListener('click', () => {
+        //     docElements.fileInput.click();
+        // });
+
+        // docElements.fileInput.addEventListener('change', (e) => {
+        //     if (e.target.files[0]) handleDocFileSelect(e.target.files[0]);
+        // });
+
+        // // Handle document file selection
+        // function handleDocFileSelect(file) {
+        //     if (!file.type.startsWith('image/')) {
+        //         alert('Please select an image file');
+        //         return;
+        //     }
+
+        //     const reader = new FileReader();
+        //     reader.onload = function(e) {
+        //         currentDocImage = new Image();
+        //         currentDocImage.onload = function() {
+        //             // Set canvas size to match image (with max dimensions)
+        //             const maxWidth = 800;
+        //             const maxHeight = 600;
+        //             let width = currentDocImage.width;
+        //             let height = currentDocImage.height;
+                    
+        //             if (width > maxWidth) {
+        //                 height = (maxWidth * height) / width;
+        //                 width = maxWidth;
+        //             }
+        //             if (height > maxHeight) {
+        //                 width = (maxHeight * width) / height;
+        //                 height = maxHeight;
+        //             }
+                    
+        //             docElements.previewCanvas.width = width;
+        //             docElements.previewCanvas.height = height;
+        //             docElements.previewCanvas.style.display = 'block';
+                    
+        //             const ctx = docElements.previewCanvas.getContext('2d');
+        //             ctx.drawImage(currentDocImage, 0, 0, width, height);
+                    
+        //             // Show analysis options after image is loaded
+        //             docElements.analysisOptions.style.display = 'block';
+        //             docElements.results.style.display = 'none';
+        //         };
+        //         currentDocImage.src = e.target.result;
+        //     };
+        //     reader.readAsDataURL(file);
+        // }
+
+        // // Handle document identification
+        // docElements.identifyBtn.addEventListener('click', async () => {
+        //     if (!docElements.fileInput.files[0]) {
+        //         alert('Please select a document image first');
+        //         return;
+        //     }
+
+        //     try {
+        //         docElements.loadingSpinner.style.display = 'block';
+        //         docElements.askButton.disabled = true;
+        //         docElements.results.style.display = 'none';
+
+        //         const formData = new FormData();
+        //         formData.append('file', docElements.fileInput.files[0]);
+
+        //         const response = await fetch('/api/documents/classify', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+
+        //         if (!response.ok) {
+        //             const errorData = await response.json();
+        //             throw new Error(errorData.error || 'Server error');
+        //         }
+
+        //         const data = await response.json();
+
+        //         // Display the result
+        //         docElements.results.style.display = 'block';
+        //         docElements.resultText.innerHTML = `
+        //             <div class="alert alert-success">
+        //                 <h6>Document Type:</h6>
+        //                 <p class="mb-2">${data.document_type}</p>
+        //                 <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(2)}%</small>
+        //             </div>
+        //         `;
+
+        //     } catch (error) {
+        //         console.error('Error:', error);
+        //         docElements.results.style.display = 'block';
+        //         docElements.resultText.innerHTML = `
+        //             <div class="alert alert-danger">
+        //                 <h6>Error:</h6>
+        //                 <p>${error.message || 'Error identifying document'}</p>
+        //             </div>
+        //         `;
+        //     } finally {
+        //         docElements.loadingSpinner.style.display = 'none';
+        //         docElements.askButton.disabled = false;
+        //     }
+        // });
+
+        // // Handle asking questions about the document
+        // docElements.askButton.addEventListener('click', async () => {
+        //     const question = docElements.questionInput.value.trim();
+        //     if (!question) {
+        //         alert('Please enter a question');
+        //         return;
+        //     }
+
+        //     if (!docElements.fileInput.files[0]) {
+        //         alert('Please select a document image first');
+        //         return;
+        //     }
+
+        //     try {
+        //         docElements.loadingSpinner.style.display = 'block';
+        //         docElements.askButton.disabled = true;
+        //         docElements.results.style.display = 'none';
+
+        //         const formData = new FormData();
+        //         formData.append('file', docElements.fileInput.files[0]);
+        //         formData.append('question', question);
+
+        //         const response = await fetch('/api/documents/ask', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+
+        //         if (!response.ok) {
+        //             const errorData = await response.json();
+        //             throw new Error(errorData.error || 'Server error');
+        //         }
+
+        //         const data = await response.json();
+
+        //         // Display the answer
+        //         docElements.results.style.display = 'block';
+        //         docElements.resultText.innerHTML = `
+        //             <div class="alert alert-success">
+        //                 <h6>Answer:</h6>
+        //                 <p class="mb-2">${data.answer}</p>
+        //                 <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(2)}%</small>
+        //             </div>
+        //         `;
+
+        //     } catch (error) {
+        //         console.error('Error:', error);
+        //         docElements.results.style.display = 'block';
+        //         docElements.resultText.innerHTML = `
+        //             <div class="alert alert-danger">
+        //                 <h6>Error:</h6>
+        //                 <p>${error.message || 'Error processing question'}</p>
+        //             </div>
+        //         `;
+        //     } finally {
+        //         docElements.loadingSpinner.style.display = 'none';
+        //         docElements.askButton.disabled = false;
+        //     }
+        // });
+
+        // // Gemini document analysis elements
+        // const geminiElements = {
+        //     dropZone: document.getElementById('geminiDropZone'),
+        //     fileInput: document.getElementById('geminiFileInput'),
+        //     previewCanvas: document.getElementById('geminiPreviewCanvas'),
+        //     analysisOptions: document.getElementById('geminiAnalysisOptions'),
+        //     identifyBtn: document.getElementById('geminiIdentifyBtn'),
+        //     questionInput: document.getElementById('geminiQuestionInput'),
+        //     askButton: document.getElementById('geminiAskButton'),
+        //     results: document.getElementById('geminiResults'),
+        //     resultText: document.getElementById('geminiResultText'),
+        //     loadingSpinner: document.getElementById('geminiLoadingSpinner')
+        // };
+
+        // let currentGeminiImage = null;
+
+        // // Add drag and drop functionality for documents
+        // geminiElements.dropZone.addEventListener('dragover', (e) => {
+        //     e.preventDefault();
+        //     geminiElements.dropZone.style.backgroundColor = '#f8f9fa';
+        // });
+
+        // geminiElements.dropZone.addEventListener('dragleave', (e) => {
+        //     e.preventDefault();
+        //     geminiElements.dropZone.style.backgroundColor = '';
+        // });
+
+        // geminiElements.dropZone.addEventListener('drop', (e) => {
+        //     e.preventDefault();
+        //     geminiElements.dropZone.style.backgroundColor = '';
+        //     const file = e.dataTransfer.files[0];
+        //     if (file) handleGeminiFileSelect(file);
+        // });
+
+        // geminiElements.dropZone.addEventListener('click', () => {
+        //     geminiElements.fileInput.click();
+        // });
+
+        // geminiElements.fileInput.addEventListener('change', (e) => {
+        //     if (e.target.files[0]) handleGeminiFileSelect(e.target.files[0]);
+        // });
+
+        // // Handle document file selection
+        // function handleGeminiFileSelect(file) {
+        //     if (!file.type.startsWith('image/')) {
+        //         alert('Please select an image file');
+        //         return;
+        //     }
+
+        //     const reader = new FileReader();
+        //     reader.onload = function(e) {
+        //         currentGeminiImage = new Image();
+        //         currentGeminiImage.onload = function() {
+        //             // Set canvas size to match image (with max dimensions)
+        //             const maxWidth = 800;
+        //             const maxHeight = 600;
+        //             let width = currentGeminiImage.width;
+        //             let height = currentGeminiImage.height;
+                    
+        //             if (width > maxWidth) {
+        //                 height = (maxWidth * height) / width;
+        //                 width = maxWidth;
+        //             }
+        //             if (height > maxHeight) {
+        //                 width = (maxHeight * width) / height;
+        //                 height = maxHeight;
+        //             }
+                    
+        //             geminiElements.previewCanvas.width = width;
+        //             geminiElements.previewCanvas.height = height;
+        //             geminiElements.previewCanvas.style.display = 'block';
+                    
+        //             const ctx = geminiElements.previewCanvas.getContext('2d');
+        //             ctx.drawImage(currentGeminiImage, 0, 0, width, height);
+                    
+        //             // Show analysis options after image is loaded
+        //             geminiElements.analysisOptions.style.display = 'block';
+        //             geminiElements.results.style.display = 'none';
+        //         };
+        //         currentGeminiImage.src = e.target.result;
+        //     };
+        //     reader.readAsDataURL(file);
+        // }
+
+        // // Handle document identification with Gemini
+        // geminiElements.identifyBtn.addEventListener('click', async () => {
+        //     if (!geminiElements.fileInput.files[0]) {
+        //         alert('Please select a document image first');
+        //         return;
+        //     }
+
+        //     try {
+        //         geminiElements.loadingSpinner.style.display = 'block';
+        //         geminiElements.identifyBtn.disabled = true;
+        //         geminiElements.results.style.display = 'none';
+
+        //         const formData = new FormData();
+        //         formData.append('file', geminiElements.fileInput.files[0]);
+
+        //         // Update the endpoint
+        //         const response = await fetch('/api/detection/identify_objects', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+
+        //         if (!response.ok) {
+        //             const errorData = await response.json();
+        //             throw new Error(errorData.error || 'Server error');
+        //         }
+
+        //         const data = await response.json();
+
+        //         // Display the result
+        //         geminiElements.results.style.display = 'block';
+        //         geminiElements.resultText.innerHTML = `
+        //             <div class="alert alert-success">
+        //                 <h6>Objects Identified:</h6>
+        //                 <div class="mb-2">${data.objects.replace(/\n/g, '<br>')}</div>
+        //                 <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(2)}%</small>
+        //             </div>
+        //         `;
+
+        //     } catch (error) {
+        //         console.error('Error:', error);
+        //         geminiElements.results.style.display = 'block';
+        //         geminiElements.resultText.innerHTML = `
+        //             <div class="alert alert-danger">
+        //                 <h6>Error:</h6>
+        //                 <p>${error.message || 'Error identifying objects'}</p>
+        //             </div>
+        //         `;
+        //     } finally {
+        //         geminiElements.loadingSpinner.style.display = 'none';
+        //         geminiElements.identifyBtn.disabled = false;
+        //     }
+        // });
+
+        // // Handle asking questions about the document with Gemini
+        // geminiElements.askButton.addEventListener('click', async () => {
+        //     const question = geminiElements.questionInput.value.trim();
+        //     if (!question) {
+        //         alert('Please enter a question');
+        //         return;
+        //     }
+
+        //     if (!geminiElements.fileInput.files[0]) {
+        //         alert('Please select a document image first');
+        //         return;
+        //     }
+
+        //     try {
+        //         geminiElements.loadingSpinner.style.display = 'block';
+        //         geminiElements.askButton.disabled = true;
+        //         geminiElements.results.style.display = 'none';
+
+        //         const formData = new FormData();
+        //         formData.append('file', geminiElements.fileInput.files[0]);
+        //         formData.append('question', question);
+
+        //         const response = await fetch('/api/detection/ask', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+
+        //         if (!response.ok) {
+        //             const errorData = await response.json();
+        //             throw new Error(errorData.error || 'Server error');
+        //         }
+
+        //         const data = await response.json();
+
+        //         // Display the answer
+        //         geminiElements.results.style.display = 'block';
+        //         geminiElements.resultText.innerHTML = `
+        //             <div class="alert alert-success">
+        //                 <h6>Answer:</h6>
+        //                 <p class="mb-2">${data.answer}</p>
+        //                 <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(2)}%</small>
+        //             </div>
+        //         `;
+
+        //     } catch (error) {
+        //         console.error('Error:', error);
+        //         geminiElements.results.style.display = 'block';
+        //         geminiElements.resultText.innerHTML = `
+        //             <div class="alert alert-danger">
+        //                 <h6>Error:</h6>
+        //                 <p>${error.message || 'Error processing question'}</p>
+        //             </div>
+        //         `;
+        //     } finally {
+        //         geminiElements.loadingSpinner.style.display = 'none';
+        //         geminiElements.askButton.disabled = false;
+        //     }
+        // });
+
+        // Add the missing getToastContainer function
+        function getToastContainer() {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'position-fixed bottom-0 end-0 p-3';
+                container.style.zIndex = '1080';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        // Replace all existing modal declarations with this unified initialization code
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all modals
+            const modals = {
+                history: new bootstrap.Modal(document.getElementById('historyPanel')),
+                config: new bootstrap.Modal(document.getElementById('configPanel')),
+                model: new bootstrap.Modal(document.getElementById('modelPanel')),
+                configHistory: new bootstrap.Modal(document.getElementById('configHistoryPanel')),
+                vault: new bootstrap.Modal(document.getElementById('vaultModal'))
+            };
+
+            // Vault Modal Handlers
+            const openVaultBtn = document.getElementById('openVaultBtn');
+            const createVaultSessionBtn = document.getElementById('createVaultSessionBtn');
+            const vaultForm = document.getElementById('vaultForm');
+
+            if (openVaultBtn) {
+                openVaultBtn.addEventListener('click', function() {
+                    openModal('vaultModal');
+                });
+            }
+
+            if (createVaultSessionBtn) {
+                createVaultSessionBtn.addEventListener('click', async function() {
+                    const provider = document.getElementById('vaultProvider')?.value;
+                    const apiKey = document.getElementById('vaultApiKey')?.value;
+                    const duration = parseInt(document.getElementById('vaultDuration')?.value || '24');
+
+                    if (!apiKey) {
+                        showToast('error', 'Please enter an API key');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/vault/create_session', {
+                            method: 'POST',
+                            headers: addAuthHeader(),
+                            body: JSON.stringify({
+                                provider,
+                                api_key: apiKey,
+                                duration_hours: duration
+                            })
+                        });
+                        if(response.status === 401) {
+                            window.location.href = '/login';
+                        }
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to create session');
+                        }
+                        
+                        const data = await response.json();
+                        localStorage.setItem(`${provider}_session`, data.session_id);
+                        showToast('success', 'Session created successfully!');
+                        closeModal('vaultModal');
+                        vaultForm?.reset();
+                        
+                    } catch (error) {
+                        console.error('Error creating vault session:', error);
+                        showToast('error', 'Failed to create session');
+                    }
+                });
+            }
+
+            // Analysis form handling
+            const analysisForm = document.getElementById('analysisForm');
+            if (analysisForm) {
+                // Form submission is already handled in the DOMContentLoaded event listener above
+                // Remove duplicate event listener
+            }
+
+            // Toast notification system
+            function showToast(type, message) {
+                const toastContainer = getToastContainer();
+                
+                const toastElement = document.createElement('div');
+                toastElement.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+                toastElement.setAttribute('role', 'alert');
+                toastElement.setAttribute('aria-live', 'assertive');
+                toastElement.setAttribute('aria-atomic', 'true');
+                
+                toastElement.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toastElement);
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+
+            function getToastContainer() {
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    container.className = 'position-fixed bottom-0 end-0 p-3';
+                    container.style.zIndex = '1080';
+                    document.body.appendChild(container);
+                }
+                return container;
+            }
+
+            function formatResponse(data) {
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">Model</span>
+                            <span>${data.used_model}</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-secondary me-2">Task</span>
+                            <span>${data.log_type}</span>
+                        </div>
+                    </div>
+                    <div class="border-top pt-3">
+                        ${formatResponseText(data.response)}
+                    </div>
+                `;
+            }
+
+            function formatResponseText(response) {
+                const escaped = response
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+                
+                return escaped.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                    return `<div class="code-block bg-light p-3 rounded mb-3 mt-3 border-start border-primary border-3">${code}</div>`;
+                });
+            }
+        });
+    </script>
+
+    <!-- Add this section before the closing body tag -->
+    <script>
+        function addAuthHeader(excludeContentType = false) {
+            const token = localStorage.getItem('access_token');
+            if(!token) {
+                window.location.href = '/login';
+            }
+            const headers = {
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+            
+            if (!excludeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            return headers;
+        }
+        // API Key Management functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the vault key management system
+            initializeKeyManagement();
+            
+            // Setup event listeners for key management
+            setupKeyManagementEvents();
+        });
+
+        // Store for API keys (server-based storage instead of localStorage)
+        const apiKeyStore = {
+            keys: {},
+            
+            // Add or update a key
+            saveKey: async function(provider, keyData) {
+                try {
+                    const response = await fetch('/api/vault/save_key', {
+                        method: 'POST',
+                        headers: addAuthHeader(),
+                        body: JSON.stringify({
+                            provider: provider,
+                            key_data: keyData
+                        })
+                    });
+                    if(response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to save key to server');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Update local cache with server data
+                    if (!this.keys[provider]) {
+                        this.keys[provider] = [];
+                    }
+                    
+                    // Check if we're updating an existing key
+                    const existingIndex = this.keys[provider].findIndex(k => k.id === data.id);
+                    if (existingIndex >= 0) {
+                        this.keys[provider][existingIndex] = data;
+                    } else {
+                        this.keys[provider].push(data);
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('Error saving key to server:', error);
+                    throw error;
+                }
+            },
+            
+            // Delete a key
+            deleteKey: async function(provider, keyId) {
+                try {
+                    const response = await fetch('/api/vault/delete_key', {
+                        method: 'DELETE',
+                        headers: addAuthHeader(),
+                        body: JSON.stringify({
+                            provider: provider,
+                            key_id: keyId
+                        })
+                    });
+
+                    if(response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to delete key from server');
+                    }
+                    
+                    // Update local cache
+                    if (this.keys[provider]) {
+                        const initialLength = this.keys[provider].length;
+                        this.keys[provider] = this.keys[provider].filter(k => k.id !== keyId);
+                        
+                        return initialLength !== this.keys[provider].length;
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error deleting key from server:', error);
+                    throw error;
+                }
+            },
+            
+            // Get all keys for a provider
+            getKeys: function(provider) {
+                return this.keys[provider] || [];
+            },
+            
+            // Get a specific key
+            getKey: function(provider, keyId) {
+                if (!this.keys[provider]) return null;
+                return this.keys[provider].find(k => k.id === keyId) || null;
+            },
+            
+            // Load keys from server
+            loadKeys: async function() {
+                try {
+                    const response = await fetch('/api/vault/get_keys',{
+                        headers: addAuthHeader()
+                    });
+                    if(response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch keys from server');
+                    }
+                    
+                    const data = await response.json();
+                    this.keys = data.keys || {};
+                    return this.keys;
+                } catch (error) {
+                    console.error('Error loading keys from server:', error);
+                    this.keys = {};
+                    return this.keys;
+                }
+            }
+        };
+
+        async function initializeKeyManagement() {
+            try {
+                // Load saved keys from server
+                await apiKeyStore.loadKeys();
+                
+                // Replace the current vault modal content with our enhanced version
+                const vaultModal = document.getElementById('vaultModal');
+                if (vaultModal) {
+                    // Rest of your modal content setup...
+                }
+                
+                // Render the initial list of API keys
+                renderApiKeysList();
+            } catch (error) {
+                console.error('Error initializing key management:', error);
+                showToast('error', 'Failed to load API keys from server');
+            }
+        }
+
+        function setupKeyManagementEvents() {
+            // Toggle the Other Provider field when provider is changed
+            document.getElementById('keyProvider')?.addEventListener('change', function() {
+                const otherField = document.getElementById('otherProviderField');
+                if (otherField) {
+                    otherField.style.display = this.value === 'other' ? 'block' : 'none';
+                }
+            });
+            
+            // Toggle password visibility
+            document.querySelector('.toggle-password')?.addEventListener('click', function() {
+                const apiKeyInput = document.getElementById('apiKeyValue');
+                const icon = this.querySelector('i');
+                
+                if (apiKeyInput.type === 'password') {
+                    apiKeyInput.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    apiKeyInput.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+            
+            // Save key button
+            document.getElementById('saveKeyBtn')?.addEventListener('click', async function() {
+                // Get form values
+                const keyId = document.getElementById('keyId').value;
+                let provider = document.getElementById('keyProvider').value;
+                
+                if (provider === 'other') {
+                    provider = document.getElementById('otherProvider').value;
+                    if (!provider.trim()) {
+                        showToast('error', 'Please enter a provider name');
+                        return;
+                    }
+                }
+                
+                const keyName = document.getElementById('keyName').value;
+                const apiKey = document.getElementById('apiKeyValue').value;
+                const expiration = document.getElementById('keyExpiration').value;
+                const isDefault = document.getElementById('isDefault').checked;
+                
+                if (!keyName.trim() || !apiKey.trim()) {
+                    showToast('error', 'Key name and API key are required');
+                    return;
+                }
+                
+                // Save the key
+                const keyData = {
+                    id: keyId || undefined,
+                    name: keyName,
+                    key: apiKey,
+                    expiration: expiration || null,
+                    isDefault: isDefault,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    await apiKeyStore.saveKey(provider, keyData);
+                    
+                    // Reset form and show success message
+                    resetKeyForm();
+                    renderApiKeysList();
+                    showToast('success', 'API key saved successfully');
+                    
+                    // Switch back to the keys list tab
+                    const keysTab = document.getElementById('keys-tab');
+                    if (keysTab) {
+                        const tabInstance = new bootstrap.Tab(keysTab);
+                        tabInstance.show();
+                    }
+                } catch (error) {
+                    showToast('error', 'Failed to save API key to server');
+                }
+            });
+            
+            // Cancel edit button
+            document.getElementById('cancelEditBtn')?.addEventListener('click', function() {
+                resetKeyForm();
+                // Switch back to the keys list tab
+                const keysTab = document.getElementById('keys-tab');
+                if (keysTab) {
+                    const tabInstance = new bootstrap.Tab(keysTab);
+                    tabInstance.show();
+                }
+            });
+            
+            // Provider filter change
+            document.getElementById('keyProviderFilter')?.addEventListener('change', function() {
+                renderApiKeysList(this.value);
+            });
+            
+            // Event delegation for edit/delete buttons (they're dynamically created)
+            document.getElementById('apiKeysList')?.addEventListener('click', function(e) {
+                // Handle edit button click
+                if (e.target.classList.contains('edit-key-btn') || 
+                    e.target.closest('.edit-key-btn')) {
+                    const btn = e.target.classList.contains('edit-key-btn') ? 
+                                e.target : e.target.closest('.edit-key-btn');
+                    const provider = btn.dataset.provider;
+                    const keyId = btn.dataset.keyid;
+                    editKey(provider, keyId);
+                }
+                
+                // Handle delete button click
+                if (e.target.classList.contains('delete-key-btn') || 
+                    e.target.closest('.delete-key-btn')) {
+                    const btn = e.target.classList.contains('delete-key-btn') ? 
+                                e.target : e.target.closest('.delete-key-btn');
+                    const provider = btn.dataset.provider;
+                    const keyId = btn.dataset.keyid;
+                    deleteKey(provider, keyId);
+                }
+                
+                // Handle use key button click
+                if (e.target.classList.contains('use-key-btn') || 
+                    e.target.closest('.use-key-btn')) {
+                    const btn = e.target.classList.contains('use-key-btn') ? 
+                                e.target : e.target.closest('.use-key-btn');
+                    const provider = btn.dataset.provider;
+                    const keyId = btn.dataset.keyid;
+                    useKey(provider, keyId);
+                }
+            });
+        }
+
+        function renderApiKeysList(providerFilter = 'all') {
+            const keysList = document.getElementById('apiKeysList');
+            if (!keysList) return;
+            
+            let allKeys = [];
+            let providers = Object.keys(apiKeyStore.keys);
+            
+            // Filter providers if a specific one is selected
+            if (providerFilter !== 'all') {
+                providers = providers.filter(p => p === providerFilter);
+            }
+            
+            // Collect all keys from the selected providers
+            providers.forEach(provider => {
+                const keys = apiKeyStore.getKeys(provider);
+                keys.forEach(key => {
+                    allKeys.push({
+                        provider: provider,
+                        ...key
+                    });
+                });
+            });
+            
+            // Sort keys - default keys first, then by created date
+            allKeys.sort((a, b) => {
+                if (a.isDefault && !b.isDefault) return -1;
+                if (!a.isDefault && b.isDefault) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            
+            if (allKeys.length === 0) {
+                keysList.innerHTML = `
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-key-fill display-4"></i>
+                        <p>No API keys found. Add a new key to get started.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create HTML for each key
+            keysList.innerHTML = allKeys.map(key => {
+                // Check if key is expired
+                const isExpired = key.expiration && new Date(key.expiration) < new Date();
+                
+                // Create masked key value for display
+                const maskedKey = `${key.key.substring(0, 4)}...${key.key.substring(key.key.length - 4)}`;
+                
+                return `
+                    <div class="list-group-item ${isExpired ? 'border-danger' : ''} ${key.isDefault ? 'border-primary' : ''}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 d-flex align-items-center">
+                                    ${key.name}
+                                    ${key.isDefault ? '<span class="badge bg-primary ms-2">Default</span>' : ''}
+                                    ${isExpired ? '<span class="badge bg-danger ms-2">Expired</span>' : ''}
+                                </h6>
+                                <p class="mb-1 text-muted small">
+                                    <span class="badge bg-light text-dark me-2">${key.provider}</span>
+                                    ${maskedKey}
+                                </p>
+                                ${key.expiration ? 
+                                    `<p class="mb-0 small text-${isExpired ? 'danger' : 'muted'}">
+                                        Expires: ${new Date(key.expiration).toLocaleDateString()}
+                                    </p>` : 
+                                    '<p class="mb-0 small text-muted">No expiration</p>'
+                                }
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-success use-key-btn" 
+                                        data-provider="${key.provider}" data-keyid="${key.id}">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary edit-key-btn" 
+                                        data-provider="${key.provider}" data-keyid="${key.id}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-key-btn" 
+                                        data-provider="${key.provider}" data-keyid="${key.id}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function resetKeyForm() {
+            const form = document.getElementById('apiKeyForm');
+            if (form) form.reset();
+            
+            document.getElementById('keyId').value = '';
+            document.getElementById('otherProviderField').style.display = 'none';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        function editKey(provider, keyId) {
+            const key = apiKeyStore.getKey(provider, keyId);
+            if (!key) return;
+            
+            // Populate the form with key data
+            document.getElementById('keyId').value = key.id;
+            
+            const providerSelect = document.getElementById('keyProvider');
+            const standardProviders = ['openai', 'anthropic', 'google'];
+            
+            if (standardProviders.includes(provider)) {
+                providerSelect.value = provider;
+                document.getElementById('otherProviderField').style.display = 'none';
+            } else {
+                providerSelect.value = 'other';
+                document.getElementById('otherProvider').value = provider;
+                document.getElementById('otherProviderField').style.display = 'block';
+            }
+            
+            document.getElementById('keyName').value = key.name;
+            document.getElementById('apiKeyValue').value = key.key;
+            document.getElementById('keyExpiration').value = key.expiration || '';
+            document.getElementById('isDefault').checked = key.isDefault;
+            
+            // Show the cancel button
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            
+            // Switch to the add/edit tab
+            const addKeyTab = document.getElementById('add-key-tab');
+            if (addKeyTab) {
+                const tabInstance = new bootstrap.Tab(addKeyTab);
+                tabInstance.show();
+            }
+        }
+
+        function deleteKey(provider, keyId) {
+            if (confirm('Are you sure you want to delete this API key?')) {
+                apiKeyStore.deleteKey(provider, keyId).then(success => {
+                    if (success) {
+                        renderApiKeysList();
+                        showToast('success', 'API key deleted successfully');
+                    } else {
+                        showToast('error', 'Failed to delete API key');
+                    }
+                }).catch(error => {
+                    console.error('Error deleting key:', error);
+                    showToast('error', 'Failed to delete API key from server');
+                });
+            }
+        }
+
+        function useKey(provider, keyId) {
+            const key = apiKeyStore.getKey(provider, keyId);
+            if (!key) return;
+            
+            // Create a session for this key
+            createKeySession(provider, key.key);
+        }
+
+        async function createKeySession(provider, apiKey) {
+            try {
+                const response = await fetch('/api/vault/create_session', {
+                    method: 'POST',
+                    headers: addAuthHeader(),
+                    body: JSON.stringify({
+                        provider: provider,
+                        api_key: apiKey,
+                        duration_hours: 24 // Default to 24 hours
+                    })
+                });
+                
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                if (!response.ok) {
+                    throw new Error('Failed to create session');
+                }
+                
+                const data = await response.json();
+                localStorage.setItem(`${provider}_session`, data.session_id);
+                
+                showToast('success', 'API key activated successfully');
+                
+                // Close the modal
+                const vaultModalEl = document.getElementById('vaultModal');
+                if (vaultModalEl) {
+                    const vaultModal = bootstrap.Modal.getInstance(vaultModalEl);
+                    if (vaultModal) vaultModal.hide();
+                }
+                
+            } catch (error) {
+                console.error('Error creating key session:', error);
+                showToast('error', 'Failed to activate API key');
+            }
+        }
+
+        // Toast notification function if not already defined
+        function showToast(type, message) {
+            // if (window.showToast) {
+            //     return window.showToast(type, message);
+            // }
+            
+            const toastContainer = document.getElementById('toast-container') || 
+                                   createToastContainer();
+            
+            const toastElement = document.createElement('div');
+            toastElement.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toastElement.setAttribute('role', 'alert');
+            toastElement.setAttribute('aria-live', 'assertive');
+            toastElement.setAttribute('aria-atomic', 'true');
+            
+            toastElement.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toastElement);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '1080';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function openFileViewer() {
+            if (!currentFiles) {
+                showToast('error', 'No files available to view');
+                return;
+            }
+    
+             const fileViewer = new bootstrap.Modal(document.getElementById('fileViewer'));
+            fileViewer.show();
+            renderFileList(currentFiles);
+        }
+
+        function closeFileViewer() {
+            const fileViewer = bootstrap.Modal.getInstance(document.getElementById('fileViewer'));
+            if (fileViewer) {
+                fileViewer.hide();
+            }
+        }
+    </script>
+
+    <!-- Close modals when clicking outside or on close button -->
+    <script>
+        function addAuthHeader(excludeContentType = false) {
+            const token = localStorage.getItem('access_token');
+            if(!token) {
+                window.location.href = '/login';
+            }
+            const headers = {
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+            
+            if (!excludeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            return headers;
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all modals
+            const modalElements = document.querySelectorAll('.modal');
+            modalElements.forEach(modalElement => {
+                const modal = new bootstrap.Modal(modalElement);
+                
+                // Add close button handler
+                const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        modal.hide();
+                    });
+                });
+                
+                // Add backdrop click handler
+                modalElement.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        modal.hide();
+                    }
+                });
+            });
+
+            // Add global escape key handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    modalElements.forEach(modalElement => {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    });
+                }
+            });
+        });
+
+        // Update modal close functions
+        function closeModal(modalId) {
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+        }
+
+        // Update specific modal close functions
+        function closeHistoryPanel() {
+            closeModal('historyPanel');
+        }
+
+        function closeConfigPanel() {
+            closeModal('configPanel');
+        }
+
+        function closeConfigHistory() {
+            closeModal('configHistoryPanel');
+        }
+    </script>
+
+    <!-- Global modal functions -->
+    <script>
+        function addAuthHeader(excludeContentType = false) {
+            const token = localStorage.getItem('access_token');
+            if(!token) {
+                window.location.href = '/login';
+            }
+            const headers = {
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+            
+            if (!excludeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            return headers;
+        }
+        // ... existing code ...
+        // Global modal functions
+        window.openModal = function(modalId) {
+            if (modals[modalId]) {
+                modals[modalId].show();
+            }
+        };
+
+        window.closeModal = function(modalId) {
+            if (modals[modalId]) {
+                modals[modalId].hide();
+            }
+        };
+
+        // Modal-specific functions
+        window.openHistoryPanel = async function() {
+            try {
+                const response = await fetch('/api/analyze/history',{
+                    headers: addAuthHeader()
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                await loadHistoryData(data);
+                openModal('historyPanel');
+            } catch (error) {
+                console.error('Error loading history:', error);
+                showError('historyPanel', error);
+            }
+        };
+
+        window.openConfigPanel = async function() {
+            try {
+                const response = await fetch('/api/config',{
+                    headers: addAuthHeader()
+                });
+                if(response.status === 401) {
+                        window.location.href = '/login';
+                }
+                const data = await response.json();
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    currentModels = data.config.models || {};
+                    renderConfigPanel();
+                    renderModelsList();
+                    openModal('configPanel');
+                } else {
+                    throw new Error(data.message || 'Failed to load configuration');
+                }
+            } catch (error) {
+                console.error('Error loading configuration:', error);
+                showError('configPanel', error);
+            }
+        };
+
+        window.openVaultModal = function() {
+            openModal('vaultModal');
+        };
+
+        // Helper functions
+        function showError(modalId, error) {
+            const errorMessage = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    ${error.message || 'An error occurred'}
+                </div>
+            `;
+            
+            const modalBody = document.querySelector(`#${modalId} .modal-body`);
+            if (modalBody) {
+                modalBody.insertAdjacentHTML('afterbegin', errorMessage);
+            }
+            
+            openModal(modalId);
+        }
+
+        async function loadHistoryData(data) {
+            const historyList = document.getElementById('historyList');
+            
+            if (data.status === 'error') {
+                throw new Error(data.message || 'Unknown error');
+            }
+            
+            const sessions = data.sessions || [];
+            
+            if (sessions.length === 0) {
+                historyList.innerHTML = `
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-clock display-4 mb-3"></i>
+                        <p>No analysis history found</p>
+                        <p>Analyze some files to see them here</p>
+                    </div>`;
+            } else {
+                historyList.innerHTML = sessions.map(session => `
+                    <a href="#" class="list-group-item list-group-item-action" 
+                       onclick="viewHistorySession('${session.path}', ${JSON.stringify(session.files).replace(/"/g, '&quot;')})">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${session.task_type}</h6>
+                            <small>${new Date(session.timestamp).toLocaleDateString()}</small>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>${new Date(session.timestamp).toLocaleTimeString()}
+                        </small>
+                        <small class="d-block">
+                            <i class="bi bi-files me-1"></i>${session.files.request.length + session.files.response.length} files
+                        </small>
+                    </a>
+                `).join('');
+            }
+        }
+
+        // ... existing code ...
+    </script>
+
+    <!-- Add event listeners for search functionality -->
+    <script>
+        function addAuthHeader(excludeContentType = false) {
+            const token = localStorage.getItem('access_token');
+            if(!token) {
+                window.location.href = '/login';
+            }
+            const headers = {
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+            
+            if (!excludeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            return headers;
+        }
+        // Task type search
+        const taskTypeSearch = document.getElementById('taskTypeSearch');
+        if (taskTypeSearch) {
+            taskTypeSearch.addEventListener('input', function(e) {
+                const searchText = e.target.value.toLowerCase();
+                const types = Object.keys(currentConfig)
+                    .filter(type => type !== 'models')
+                    .filter(type => type.toLowerCase().includes(searchText));
+                renderTaskTypes(types);
+            });
+        }
+
+        // Model search
+        const modelSearch = document.getElementById('modelSearch');
+        if (modelSearch) {
+            modelSearch.addEventListener('input', function(e) {
+                renderModelsList(e.target.value);
+            });
+        }
+    </script>
+<footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+        <span class="text-muted">&copy; 2025 Dvara Intelligent Systems. All rights reserved.</span>
+    </div>
+</footer>
+
+</body>
+</html>

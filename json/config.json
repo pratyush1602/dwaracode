@@ -1,0 +1,285 @@
+{
+  "perdix": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following log. Note that it might be a stacktrace, a simple application log, or a snippet from an external service (e.g., Nginx, HTTPS, etc.). Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the error or event in plain language, *including the date and time if available*. * If a clear error message is present (e.g., 'Aadhaar number \u2026 already exist' or a specific request/response error), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * For stacktraces: Detail the exception type, pinpoint the method and line number where the error originated, and trace its propagation. * For application logs or request/response logs: Identify key components (such as the service name, endpoint, error code, or HTTP status) and explain the underlying mechanism. * For logs from external services (e.g., Nginx or HTTPS): Clearly identify the log source and any correlation with internal services. * Note: For issues related to LMS or Encore, only identify the problem without suggesting any fixes or configuration changes. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * For stacktraces: Describe what the error means and indicate where to look in the code. * For application or external logs: Explain the observed event (such as a failed request or server error) in simple terms without proposing specific fixes. 4. Root Cause: * Clearly state the root cause of the error or log event based on your analysis. 5. Potential Areas for Investigation (For Experienced Developers ONLY): * Based on the root cause, suggest *potential* areas in the code or configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a developer familiar with the system. * Do NOT provide specific code changes. Focus on identifying *potential* problem areas or configuration settings. * If the root cause is unclear, or if the log is from an external system (LMS/Encore), state \"Further investigation by the relevant team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Service is down,\" \"High: User functionality is impaired,\" \"Medium: Intermittent error, but service is operational,\" \"Low: Minor issue, no impact on functionality,\" \"Informational: No error, just a log message\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **]\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "tomcat": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following system log. Note that it might be a standard system log, a kernel log, a service log, or a daemon log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the event or status in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Service started successfully' or 'Disk space warning'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the system component or service generating the log. * Detail any process IDs, thread IDs, or service names mentioned. * Explain what system operation was being performed and its outcome. * Note any resource utilization metrics or thresholds mentioned. * For logs from system services: Clearly identify the service name and any correlation with other services. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the system was trying to do and whether it succeeded or failed. * Describe any impacts on system performance or functionality in simple terms. 4. Root Cause: * Clearly state the root cause of the system event based on your analysis. 5. Potential Areas for Investigation (For Experienced Administrators ONLY): * Based on the root cause, suggest *potential* areas in the system configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by an administrator familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the system administration team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: System is down,\" \"High: Core service is impaired,\" \"Medium: Non-critical service issue,\" \"Low: Minor issue, no impact on functionality,\" \"Informational: Regular system operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "networklogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following network log. Note that it might be a firewall log, router log, switch log, VPN log, or other network device log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the network event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Connection refused' or 'Packet dropped'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the network component generating the log (e.g., firewall, router, load balancer). * Detail the IP addresses, ports, protocols, and network interfaces involved. * Explain the network operation being performed and its outcome. * Note any bandwidth, latency, or other performance metrics mentioned. * For logs from network devices: Clearly identify the device and any correlation with other network components. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the network was trying to do and whether it succeeded or failed. * Describe any impacts on network connectivity or performance in simple terms. 4. Root Cause: * Clearly state the root cause of the network event based on your analysis. 5. Potential Areas for Investigation (For Experienced Network Engineers ONLY): * Based on the root cause, suggest *potential* areas in the network configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a network engineer familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the network team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Network is down,\" \"High: Major service connectivity is impaired,\" \"Medium: Partial connectivity issues,\" \"Low: Minor issue, no impact on connectivity,\" \"Informational: Regular network operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "accesslogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following access log. Note that it might be a web server access log, application login log, API access log, or database access log. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the access event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Login successful' or 'Access denied'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the system component handling the access request (e.g., web server, auth service, database). * Detail the user/client identifiers, IP addresses, endpoints, methods, and response codes. * Explain what access was being attempted and whether it succeeded or failed. * Note any performance metrics (response time, resource utilization) mentioned. * For web access logs: Parse the HTTP method, URL path, response code, and user agent information. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what the user or system was trying to access and whether they were allowed or denied. * Describe any unusual patterns or potential security concerns in simple terms. 4. Root Cause: * Clearly state the root cause of the access event based on your analysis. 5. Potential Areas for Investigation (For Experienced Developers/Admins ONLY): * Based on the root cause, suggest *potential* areas in the access control configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a professional familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the security team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Unauthorized access detected,\" \"High: Authentication failure pattern detected,\" \"Medium: Unusual access pattern,\" \"Low: Minor access issue,\" \"Informational: Regular access operation\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "claude-3-sonnet"
+    }
+  ],
+  "securitylogs": [
+    {
+      "prompt": "Instructions: * If the provided log is incomplete or lacks sufficient information to determine the cause, clearly state this in the \"Root Cause\" section. * Indicate what additional information would be needed to perform a more complete analysis. \"Please analyze the following security log. Note that it might be an IDS/IPS log, antivirus log, authentication log, audit log, or SIEM alert. Provide a multi-layered explanation structured as follows: 1. Functional Overview: * Summarize the security event in plain language, *including the date and time if available*. * If a clear message is present (e.g., 'Suspicious activity detected' or 'Authentication failure'), highlight it. * If the log is generic or ambiguous, note that further technical analysis is needed. 2. Technical Breakdown (Core Techies): * Identify the security component generating the log (e.g., firewall, IDS, authentication service). * Detail any attack signatures, CVEs, or threat indicators mentioned. * Explain what security check was performed and its outcome. * Note any affected assets, users, or services mentioned. * For logs from security tools: Clearly identify the tool name and correlation with other security events. 3. Technical Breakdown (Rookies): * Provide a simplified explanation in everyday language. * Explain what security threat was detected or what security policy was enforced. * Describe potential impacts on system security in simple terms without causing unnecessary alarm. 4. Root Cause: * Clearly state the root cause of the security event based on your analysis. 5. Potential Areas for Investigation (For Security Professionals ONLY): * Based on the root cause, suggest *potential* areas in the security configuration that *might* be related to the issue. * These are ONLY suggestions for investigation and MUST be verified by a security professional familiar with the system. * Do NOT provide specific configuration changes. Focus on identifying *potential* problem areas or settings. * If the root cause is unclear, state \"Further investigation by the security team is required.\" 6. Severity Assessment: * Rate the severity of the issue (e.g., Critical, High, Medium, Low, Informational). * Briefly justify your assessment. (e.g., \"Critical: Active breach detected,\" \"High: Potential unauthorized access,\" \"Medium: Suspicious activity detected,\" \"Low: Minor policy violation,\" \"Informational: Regular security check\"). Follow-up: * Feel free to ask follow-up questions based on this analysis. For instance, you can ask for clarification on specific technical terms, request a deeper dive into a particular part of the log, or provide additional log entries for context. **log content here : **\"",
+      "model": "gpt-4o-mini"
+    }
+  ],
+  "ocr": [
+    {
+      "prompt": "Extract text from an uploaded image or PDF file using Optical Character Recognition (OCR). Ensure the output maintains the original structure and formatting as much as possible. The extracted text should be clean and ready for further processing or analysis.",
+      "model": "claude-3-sonnet"
+    }
+  ],
+  "models": {
+    "gpt-4o-mini": {
+      "name": "GPT-4O Mini",
+      "provider": "openai",
+      "maxTokens": 8192,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "gpt-4o": {
+      "name": "GPT-4O",
+      "provider": "openai",
+      "maxTokens": 128000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "gpt-4-turbo": {
+      "name": "GPT-4 Turbo",
+      "provider": "openai",
+      "maxTokens": 128000,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "gpt-4": {
+      "name": "GPT-4",
+      "provider": "openai",
+      "maxTokens": 8192,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "gpt-4-vision-preview": {
+      "name": "GPT-4 Vision",
+      "provider": "openai",
+      "maxTokens": 128000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "gpt-3.5-turbo": {
+      "name": "GPT-3.5 Turbo",
+      "provider": "openai",
+      "maxTokens": 16385,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "claude-3-opus": {
+      "name": "Claude 3 Opus",
+      "provider": "anthropic",
+      "maxTokens": 200000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "claude-3-sonnet": {
+      "name": "Claude 3 Sonnet",
+      "provider": "anthropic",
+      "maxTokens": 200000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "claude-3-haiku": {
+      "name": "Claude 3 Haiku",
+      "provider": "anthropic",
+      "maxTokens": 200000,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "claude-2.1": {
+      "name": "Claude 2.1",
+      "provider": "anthropic",
+      "maxTokens": 100000,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "claude-2.0": {
+      "name": "Claude 2.0",
+      "provider": "anthropic",
+      "maxTokens": 100000,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "gemini-1.5-pro": {
+      "name": "Gemini 1.5 Pro",
+      "provider": "google",
+      "maxTokens": 1000000,
+      "capabilities": [
+        "text",
+        "code",
+        "image",
+        "audio",
+        "video"
+      ]
+    },
+    "gemini-1.5-flash": {
+      "name": "Gemini 1.5 Flash",
+      "provider": "google",
+      "maxTokens": 1000000,
+      "capabilities": [
+        "text",
+        "code",
+        "image",
+        "audio",
+        "video"
+      ]
+    },
+    "gemini-2.0-flash-exp": {
+      "name": "Gemini 2.0 Flash",
+      "provider": "google",
+      "maxTokens": 2048,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "gemini-pro": {
+      "name": "Gemini Pro",
+      "provider": "google",
+      "maxTokens": 32768,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "gemini-pro-vision": {
+      "name": "Gemini Pro Vision",
+      "provider": "google",
+      "maxTokens": 16384,
+      "capabilities": [
+        "text",
+        "code",
+        "image"
+      ]
+    },
+    "meta-llama/Meta-Llama-3-70B-Instruct": {
+      "name": "Llama-2 70B Chat",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "mistralai/Mixtral-8x7B-Instruct-v0.1": {
+      "name": "Mixtral 8x7B Instruct",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "meta-llama/Meta-Llama-3-8B-Instruct": {
+      "name": "Llama-2 8B Chat",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text",
+        "code"
+      ]
+    },
+    "google/gemma-2-9b-it": {
+      "name": "google-gemma-2-9b-it",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text"
+      ]
+    },
+    "deepseek-ai/DeepSeek-R1": {
+      "name": "deepseek-ai/DeepSeek-R1",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text"
+      ]
+    },
+    "deepseek-ai/DeepSeek-R1-Turbo": {
+      "name": "DeepSeek-R1-Turbo",
+      "provider": "deepinfra",
+      "maxTokens": 4096,
+      "capabilities": [
+        "text"
+      ]
+    }
+  },
+  "PanCard": [
+    {
+      "prompt": "\"Extract and structure the PAN card details from the following text:. Identify and return key details such as:\n\nPAN Number (10-character alphanumeric code)\nName (Full name of the cardholder)\nFather\u2019s Name\nDate of Birth (DD/MM/YYYY format)\n\nPlease json response",
+      "model": "gemini-1.5-flash"
+    }
+  ],
+  "adharcard": [
+    {
+      "prompt": "provide details\n\nHere are a few examples for you.\n    Example 1:\n\n    OCR Output:\n    Address: S/O: Bharatbhai Thakkar, B/23.\n    Om Housing Society. Near Gokul Party\n    Plot, Gotri Road, Vadodara, Racecourse,\n    Gujarat, 390007\n    8258 1159 5120\n\n    Output:\n    {{\n    \"user_name\": \"\",\n    \"father_name\": \"Bharatbhai Thakkar\",\n    \"husband_name\": \"\",\n    \"aadhar_number\": \"825811595120\",\n    \"date_of_birth\": \"\",\n    \"gender\": \"\",\n    \"pincode\": \"390007\",\n    \"street\":\"\"\n    \"state\": \"Gujarat\",\n    \"address\": \"S/O: Bharatbhai Thakkar, B/23. Om Housing Society. Near Gokul Party Plot, Gotri Road, Vadodara, Racecourse, Gujarat, 390007\"\n    }}\n\n    Example 2:\n\n    OCR Output:\n    Daya Gupta\n    DOB: 01/01/1973\n    FEMALE\n    5325 2532 2198\n\n    Output:\n    {{\n    \"user_name\": \"Daya Gupta\",\n    \"father_name\": \"\",\n    \"husband_name\": \"\",\n    \"aadhar_number\": \"532525322198\",\n    \"date_of_birth\": \"01/01/1973\",\n    \"gender\": \"FEMALE\",\n    \"pincode\": \"\",\n    \"state\": \"\",\n    \"address\": \"\"\n    }} \n\nprovide output and remove data which is other than english.\nGiven the following extracted text, identify the document type (e.g., passport, driver's license, national ID):\n{extracted_text}",
+      "model": "gemini-1.5-flash"
+    }
+  ],
+  "drivinglicence": [
+    {
+      "prompt": "\nYou are an expert system in identifying named entities and inferring values and labels from ID documents. Analyze the text below and extract the values of the following fields.  **It is crucial that you do not invent or guess any values. Leave fields empty if the information cannot be reliably found within the data.**. **Fields:** * user_name * father_name *  driving_license_number (contains more than 8 characters) * date_of_birth * birth_year * date_of_issue * date_of_first_issue * pincode (6 digits) * state * district * city * address (full address) * age * reference * licencing_authority * date_of_validity * transport_type **OCR Output:** {data}. \n\n\nprovide output and remove data which is other than english.\n\nGiven the following extracted text, identify the document type (e.g., passport, driver's license, national ID):\n{extracted_text}",
+      "model": "gemini-2.0-flash-exp"
+    }
+  ],
+  "General": [
+    {
+      "prompt": "Do some discusssion",
+      "model": "meta-llama/Meta-Llama-3-70B-Instruct"
+    }
+  ],
+  "TEST": [
+    {
+      "prompt": "tell me about india country",
+      "model": "gpt-4"
+    }
+  ],
+  "HouseAnalysis": [
+    {
+      "prompt": "Given a photo of house, clasify if house is kachha or pakka",
+      "model": "gemini-2.0-flash-exp"
+    }
+  ]
+}

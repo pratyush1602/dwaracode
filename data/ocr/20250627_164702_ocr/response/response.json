@@ -1,0 +1,7 @@
+{
+  "model_used": "gpt-4o",
+  "task_type": "ocr",
+  "response": "Provider 'openai' initialization failed. Unable to use API key from session or environment.",
+  "timestamp": "2025-06-27T16:47:02.728002",
+  "original_filename": "Pratyush_Passbook (1) (1).pdf"
+}

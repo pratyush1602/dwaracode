@@ -1,0 +1,1 @@
+Extract text from an uploaded image or PDF file using Optical Character Recognition (OCR). Ensure the output maintains the original structure and formatting as much as possible. The extracted text should be clean and ready for further processing or analysis.
