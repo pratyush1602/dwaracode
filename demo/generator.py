@@ -1,49 +1,58 @@
-from .utils import get_wrapper_path
-
+from demo.utils import get_wrapper_path
+from pathlib import Path
 
 def create_wrapper_code(task: str) -> str:
-    return f'''import requests
+    task_cap = task.capitalize()
 
-def call_analyze_api(
-    file_path: str,
-    model: str = None,
-    custom_prompt: str = None,
-    session_id: str = None,
-    api_url: str = "http://localhost:8005/api/analyze/"
-):
-    with open(file_path, "rb") as f:
-        files = {{"file": (file_path, f)}}
-        data = {{
-            "task_type": "{task}"
+    return f'''"""
+Auto-generated wrapper for task: {task_cap}
+Calls /api/analyze/ API with user input and model.
+"""
+import requests
+import os
+
+def run_model(input_path: str, model: str, custom_prompt=None, session_id=None):
+    url = "http://localhost:8000/api/analyze/"
+
+    if not os.path.exists(input_path):
+        return {{
+            "error": f"Input file '{{input_path}}' not found"
         }}
-        if model:
-            data["model"] = model
+
+    with open(input_path, "rb") as f:
+        files = {{
+            "file": f
+        }}
+        payload = {{
+            "task_type": "{task}",
+            "model": model
+        }}
+
         if custom_prompt:
-            data["custom_prompt"] = custom_prompt
+            payload["custom_prompt"] = custom_prompt
         if session_id:
-            data["session_id"] = session_id
+            payload["session_id"] = session_id
 
-        response = requests.post(api_url, data=data, files=files)
-        
-        if response.status_code == 200:
-            print("Response:")
-            print(response.json())
+        try:
+            response = requests.post(url, data=payload, files=files)
+            response.raise_for_status()
             return response.json()
-        else:
-            print("Error:", response.status_code)
-            print(response.text)
-            return None
-
-# Example usage
-if __name__ == "__main__":
-    call_analyze_api("example.log", model="your_model_id", custom_prompt="Explain the log", session_id="abc123")
+        except requests.exceptions.RequestException as e:
+            return {{
+                "error": str(e),
+                "details": getattr(e.response, 'text', None)
+            }}
 '''
 
-
-
 def generate_wrapper(task: str) -> str:
-    path = get_wrapper_path(task)
+    path = get_wrapper_path(task)  # This gives demo/wrappers/<Task>_wrapper.py
     code = create_wrapper_code(task)
-    with open(path, "w") as f:
+
+    wrapper_dir = Path(path).parent
+    wrapper_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8") as f:
         f.write(code)
+
+    print(f"✅ Wrapper generated at {path}")
     return str(path)

@@ -1,7 +1,7 @@
 from utils import wrapper_exists, get_wrapper_path
 from generator import generate_wrapper
 
-task = "adhar"
+task = "ocr"
 
 # Check if the wrapper exists
 if wrapper_exists(task):

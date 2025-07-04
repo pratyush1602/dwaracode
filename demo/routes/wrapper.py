@@ -1,11 +1,17 @@
 from fastapi import APIRouter, HTTPException, Form, UploadFile, File
 from typing import Optional
-from ..utils import wrapper_exists
-from ..utils import get_wrapper_path
-from ..generator import generate_wrapper
+from demo.utils import wrapper_exists, get_wrapper_path
+from demo.generator import generate_wrapper
+from pathlib import Path
+import importlib.util
+import os
+import traceback
 
 router = APIRouter()
 
+# ========================
+# ✅ 1. Generate Wrapper
+# ========================
 @router.post("/generate-wrapper")
 async def generate_wrapper_endpoint(
     task_type: str = Form(...),
@@ -17,55 +23,60 @@ async def generate_wrapper_endpoint(
         return {"message": f"Wrapper for '{task_type}' already exists."}
 
     try:
-        # You can access and process the file here as needed
-        # contents = await file.read() if file else None
         path = generate_wrapper(task_type)
         return {
             "message": f"Wrapper generated at {path}",
             "task_type": task_type,
             "used_model": model,
-            "response": "Sample response",  # Replace with real output
+            "response": "Sample response",  # Replace later with real result
             "saved_files": {
                 "request": {"txt": "path/to/input.txt"},
                 "response": {"json": "path/to/output.json"}
             }
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+        raise HTTPException(status_code=500, detail=f"Wrapper generation failed: {str(e)}")
 
+
+# ========================
+# ✅ 2. Call Wrapper
+# ========================
 @router.post("/wrappers/{task}_wrapper")
-async def call_task_wrapper(
+async def task_wrapper(
     task: str,
-    model: Optional[str] = Form(None),
-    custom_prompt: Optional[str] = Form(None),
-    session_id: Optional[str] = Form(None),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    model: str = Form(...),
+    custom_prompt: str = Form(None),
+    session_id: str = Form(None)
 ):
-    if not wrapper_exists(task):
-        raise HTTPException(status_code=404, detail="Wrapper not found for this task.")
-
-    wrapper_path = get_wrapper_path(task)
+    temp_path = f"temp_{file.filename}"
 
     try:
-        temp_path = f"temp_{file.filename}"
+        # Save uploaded file to a temporary location
         with open(temp_path, "wb") as f:
             f.write(await file.read())
 
-        import importlib.util, sys
-        spec = importlib.util.spec_from_file_location(f"{task}_wrapper", wrapper_path)
-        wrapper_module = importlib.util.module_from_spec(spec)
-        sys.modules[f"{task}_wrapper"] = wrapper_module
-        spec.loader.exec_module(wrapper_module)
+        # Load dynamically generated wrapper from correct path
+        module_path = f"demo/wrappers/{task}_wrapper.py"
+        if not os.path.exists(module_path):
+            raise HTTPException(status_code=404, detail=f"Wrapper file not found at {module_path}")
 
-        result = wrapper_module.call_analyze_api(
-            file_path=temp_path,
-            model=model,
-            custom_prompt=custom_prompt,
-            session_id=session_id
-        )
+        spec = importlib.util.spec_from_file_location("task_module", module_path)
+        task_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(task_module)
 
-        return {"result": result}
+        if not hasattr(task_module, "run_model"):
+            raise HTTPException(status_code=500, detail=f"No run_model() function in wrapper {task}_wrapper.py")
+
+        # Execute the wrapper's run_model function
+        result = task_module.run_model(temp_path, model, custom_prompt, session_id)
+        return result
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print("=== Wrapper Execution Error ===")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error in wrapper execution: {str(e)}")
 
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
