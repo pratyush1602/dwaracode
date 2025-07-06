@@ -78,4 +78,3 @@ def generate_wrapper(
     )
     with open(path, "w") as f:
         f.write(code)
-    return str(path)
