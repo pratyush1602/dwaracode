@@ -7,7 +7,6 @@ def create_wrapper_code(
     custom_prompt: str,
     filename: str,
     file_content: bytes,
-    token: str,
     api_url: str = "http://localhost:8005/api/analyze/"
 ) -> str:
     # Encode the file content to base64
@@ -19,7 +18,6 @@ from io import BytesIO
 
 # === Configuration ===
 API_URL = "{api_url}"
-TOKEN = "{token}"
 
 # === Form Data ===
 task_type = "{task}"
@@ -39,11 +37,9 @@ data = {{
     'model': model,
     'custom_prompt': custom_prompt
 }}
-headers = {{
-    'Authorization': f'Bearer {{TOKEN}}'
-}}
 
-response = requests.post(API_URL, data=data, files=files, headers=headers)
+
+response = requests.post(API_URL, data=data, files=files)
 
 # === Handle Response ===
 if response.ok:
@@ -63,7 +59,6 @@ def generate_wrapper(
     custom_prompt: str,
     filename: str,
     file_bytes: bytes,
-    token: str,
     api_url: str
 ) -> str:
     path = get_wrapper_path(task)
@@ -73,7 +68,6 @@ def generate_wrapper(
         custom_prompt=custom_prompt,
         filename=filename,
         file_content=file_bytes,
-        token=token,
         api_url=api_url
     )
     with open(path, "w") as f:

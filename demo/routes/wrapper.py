@@ -28,7 +28,6 @@ async def generate_wrapper_endpoint(
             custom_prompt=custom_prompt or "",
             filename=filename,
             file_bytes=file_bytes,
-            token="your_access_token_here",
             api_url="http://localhost:8005/api/analyze/"
         )
 
