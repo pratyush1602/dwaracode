@@ -10,6 +10,10 @@ from datetime import datetime
 import os
 import shutil
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # You'll need to install these packages:
 # pip install pytesseract pillow python-multipart PyPDF2
 

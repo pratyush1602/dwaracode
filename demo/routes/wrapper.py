@@ -49,16 +49,15 @@ async def task_wrapper(
     custom_prompt: str = Form(None),
     session_id: str = Form(None)
 ):
-    temp_path = f"temp_{file.filename}"
-
     try:
-        # Save uploaded file to a temporary location
+        # Save uploaded file to a temporary path
+        temp_path = f"temp_{file.filename}"
         with open(temp_path, "wb") as f:
             f.write(await file.read())
 
-        # Load dynamically generated wrapper from correct path
-        module_path = f"demo/wrappers/{task}_wrapper.py"
-        if not os.path.exists(module_path):
+        # Load the dynamically generated module
+        module_path = get_wrapper_path(task)
+        if not module_path.exists():
             raise HTTPException(status_code=404, detail=f"Wrapper file not found at {module_path}")
 
         spec = importlib.util.spec_from_file_location("task_module", module_path)
@@ -66,16 +65,22 @@ async def task_wrapper(
         spec.loader.exec_module(task_module)
 
         if not hasattr(task_module, "run_model"):
-            raise HTTPException(status_code=500, detail=f"No run_model() function in wrapper {task}_wrapper.py")
+            raise HTTPException(status_code=500, detail="run_model function not found in wrapper.")
 
-        # Execute the wrapper's run_model function
-        result = task_module.run_model(temp_path, model, custom_prompt, session_id)
+        # ✅ Now await the async function
+        result = await task_module.run_model(temp_path, model, custom_prompt, session_id)
         return result
 
     except Exception as e:
         print("=== Wrapper Execution Error ===")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error in wrapper execution: {str(e)}")
+        return {
+            "status": "error",
+            "message": "Wrapper execution failed",
+            "trace": traceback.format_exc(),
+            "exception": str(e)
+        }
+
 
     finally:
         if os.path.exists(temp_path):

@@ -1,5 +1,5 @@
 """
-Auto-generated wrapper for task: Ocr
+Auto-generated wrapper for task: Perdix
 Directly calls analyze(...) function.
 """
 from api.analyze import analyze
@@ -17,7 +17,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
         upload_file = SimpleUploadFile(filename, content)
 
     return await analyze(
-        task_type="ocr",
+        task_type="perdix",
         model=model,
         file=upload_file,
         custom_prompt=custom_prompt,
