@@ -32,9 +32,6 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
     )
 '''
 
-
-
-
 def generate_wrapper(task: str) -> str:
     path = get_wrapper_path(task)  # This gives demo/wrappers/<Task>_wrapper.py
     code = create_wrapper_code(task)
