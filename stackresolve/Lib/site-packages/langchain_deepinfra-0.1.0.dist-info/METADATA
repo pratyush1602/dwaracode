@@ -1,0 +1,73 @@
+Metadata-Version: 2.3
+Name: langchain-deepinfra
+Version: 0.1.0
+Summary: An integration package connecting DeepInfra and LangChain
+License: MIT
+Requires-Python: >=3.9,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Requires-Dist: aiohttp (>=3.9.1,<4.0.0)
+Requires-Dist: langchain-core (>=0.3.29,<0.4.0)
+Requires-Dist: langchain-openai (>=0.3,<0.4)
+Requires-Dist: requests (>=2,<3)
+Project-URL: Repository, https://github.com/zulnabil/langchain-deepinfra
+Project-URL: Release Notes, https://github.com/zulnabil/langchain-deepinfra/releases
+Project-URL: Source Code, https://github.com/zulnabil/langchain-deepinfra/tree/main/libs/deepinfra
+Description-Content-Type: text/markdown
+
+# langchain-deepinfra
+
+This package contains the LangChain integrations for [DeepInfra](https://deepinfra.com/) through their [APIs](https://deepinfra.com/docs).
+
+## Installation and Setup
+
+Install the LangChain partner package
+
+```bash
+pip install -U langchain-deepinfra
+```
+
+Get your DeepInfra api key from the [DeepInfra Dashboard](https://deepinfra.com/dash/api_keys) and set it as an environment variable (`DEEPINFRA_API_TOKEN`)
+
+```bash
+export DEEPINFRA_API_TOKEN=<api_key>
+```
+
+## Chat Completions
+
+This package contains the `ChatDeepInfra` class, which is the recommended way to interface with DeepInfra chat models.
+
+```python
+from langchain_deepinfra import ChatDeepInfra
+
+chat = ChatDeepInfra(model="meta-llama/Meta-Llama-3.1-8B-Instruct")
+chat.invoke("Who is the first president of Indonesia?")
+```
+
+## Embeddings
+
+`DeepInfraEmbeddings` class exposes the DeepInfra embedding API.
+
+```python
+from langchain_deepinfra import DeepInfraEmbeddings
+
+embeddings = DeepInfraEmbeddings(model="BAAI/bge-base-en-v1.5")
+embeddings.embed_query("Who is the first president of Indonesia?")
+```
+
+## LLM
+
+`DeepInfra` class exposes the DeepInfra LLM API.
+
+```python
+from langchain_deepinfra import DeepInfra
+
+llm = DeepInfra(model="meta-llama/Meta-Llama-3.1-8B-Instruct")
+llm.invoke("Who is the first president of Indonesia?")
+```
+
