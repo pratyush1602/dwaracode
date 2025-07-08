@@ -2,6 +2,7 @@
 Auto-generated wrapper for task: Ocr
 Calls /api/analyze/ using an HTTP POST request.
 """
+print("github")
 import httpx
 from io import BytesIO
 from starlette.datastructures import UploadFile
