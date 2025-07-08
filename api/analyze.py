@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 # You'll need to install these packages:
 # pip install pytesseract pillow python-multipart PyPDF2
 
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 try:
     from PyPDF2 import PdfReader
 except ImportError:

@@ -1,5 +1,5 @@
 """
-Auto-generated wrapper for task: Ocr
+Auto-generated wrapper for task: Pancard
 Calls /api/analyze/ using an HTTP POST request.
 """
 import httpx
@@ -19,7 +19,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
 
     # Build form data
     form_data = {
-        "task_type": "ocr",
+        "task_type": "PanCard",
         "model": model
     }
     if custom_prompt:
