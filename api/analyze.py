@@ -153,9 +153,14 @@ async def analyze(
     session_id: str = Form(None),  # For explicit session IDs from form data
     api_key_session: str = Cookie(None)  # Get session from cookies automatically
 ):
+    
+    
     # Use the cookie session if available and no explicit session ID provided
     effective_session_id = session_id or api_key_session
     
+    print(session_id)
+    print(api_key_session)
+    print(effective_session_id)
     # Read config file
     config = load_json("json/config.json")
     

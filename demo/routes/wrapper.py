@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, UploadFile, File
+from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Request
 from typing import Optional
 from demo.utils import wrapper_exists, get_wrapper_path
 from demo.generator import generate_wrapper
@@ -7,12 +7,23 @@ import importlib.util
 import os
 import traceback
 
+# print("hello there")
 router = APIRouter()
 
 @router.post("/generate-wrapper")
 async def generate_wrapper_endpoint(
+    request: Request,
     task_type: str = Form(...)
 ):
+    # Retrieve session ID from cookies for consistency
+    session_id = request.cookies.get("api_key_session")
+    if not session_id:
+        # Optionally raise an error if session ID is required
+        # raise HTTPException(status_code=401, detail="No active session found")
+        pass  # Currently, session ID is not strictly required for wrapper generation
+    
+    # print(session_id)
+
     if wrapper_exists(task_type):
         return {"message": f"Wrapper for '{task_type}' already exists."}
 
@@ -21,6 +32,7 @@ async def generate_wrapper_endpoint(
         return {
             "message": f"Wrapper generated at {path}",
             "task_type": task_type,
+            "session_id": session_id  # Include session ID in response for debugging
         }
 
     except Exception as e:
@@ -30,11 +42,12 @@ async def generate_wrapper_endpoint(
 @router.post("/wrappers/{task}_wrapper")
 async def task_wrapper(
     task: str,
+    request: Request,
     file: UploadFile = File(...),
     model: str = Form(...),
-    custom_prompt: str = Form(None),
-    session_id: str = Form(None)
+    custom_prompt: str = Form(None)
 ):
+    session_id = request.cookies.get("api_key_session")
     temp_path = f"temp_{file.filename}"
     try:
         # Save uploaded file

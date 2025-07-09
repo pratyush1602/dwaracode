@@ -2,7 +2,6 @@
 Auto-generated wrapper for task: Ocr
 Calls /api/analyze/ using an HTTP POST request.
 """
-print("github")
 import httpx
 from io import BytesIO
 from starlette.datastructures import UploadFile
@@ -34,11 +33,15 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
     # Add cookie if session_id is available
     cookies = {"api_key_session": session_id} if session_id else None
 
+    headers = {
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc1MjA0MTIyOX0.GrXV0zXgplVAnXdXnNsPItPN1odCm3nCYfU3rwRNlFM"
+}
     async with httpx.AsyncClient(cookies=cookies) as client:
         response = await client.post(
             url,
             data=form_data,
-            files=files
+            files=files,
+            headers = headers
         )
 
     if response.status_code != 200:
