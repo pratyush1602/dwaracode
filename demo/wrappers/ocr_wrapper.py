@@ -34,7 +34,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
     cookies = {"api_key_session": session_id} if session_id else None
 
     headers = {
-    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc1MjA0MTIyOX0.GrXV0zXgplVAnXdXnNsPItPN1odCm3nCYfU3rwRNlFM"
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpbnRlcm5hbF9pbnRlcm5hbCJ9.S-_6nFbY6aQNRrJSF3xB9uMjn--f39QWkOr8Eg2BZGk"
 }
     async with httpx.AsyncClient(cookies=cookies) as client:
         response = await client.post(

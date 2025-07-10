@@ -38,11 +38,16 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
     # Add cookie if session_id is available
     cookies = {{"api_key_session": session_id}} if session_id else None
 
+    headers = {{
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpbnRlcm5hbF9pbnRlcm5hbCJ9.S-_6nFbY6aQNRrJSF3xB9uMjn--f39QWkOr8Eg2BZGk"
+    }}
+
     async with httpx.AsyncClient(cookies=cookies) as client:
         response = await client.post(
             url,
             data=form_data,
-            files=files
+            files=files,
+            headers=headers
         )
 
     if response.status_code != 200:
@@ -54,6 +59,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
 
     return response.json()
 '''
+
 
 
 def generate_wrapper(task: str) -> str:

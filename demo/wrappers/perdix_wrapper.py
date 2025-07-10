@@ -1,5 +1,5 @@
 """
-Auto-generated wrapper for task: Pancard
+Auto-generated wrapper for task: Perdix
 Calls /api/analyze/ using an HTTP POST request.
 """
 import httpx
@@ -19,7 +19,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
 
     # Build form data
     form_data = {
-        "task_type": "PanCard",
+        "task_type": "perdix",
         "model": model
     }
     if custom_prompt:
@@ -33,11 +33,15 @@ async def run_model(file_path: str, model: str, custom_prompt=None, session_id=N
     # Add cookie if session_id is available
     cookies = {"api_key_session": session_id} if session_id else None
 
+    headers = {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpbnRlcm5hbF9pbnRlcm5hbCJ9.S-_6nFbY6aQNRrJSF3xB9uMjn--f39QWkOr8Eg2BZGk"
+    }
     async with httpx.AsyncClient(cookies=cookies) as client:
         response = await client.post(
             url,
             data=form_data,
-            files=files
+            files=files,
+            headers=headers
         )
 
     if response.status_code != 200:
