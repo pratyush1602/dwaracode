@@ -1,5 +1,5 @@
 """
-Auto-generated wrapper for task: ocr
+Auto-generated wrapper for task: perdix
 Calls /api/analyze/ using an HTTP POST request.
 """
 import httpx
@@ -41,7 +41,7 @@ async def run_model(file_path: str, model: str, custom_prompt=None):
 
         # Step 3: Prepare request
         form_data = {
-            "task_type": "ocr",
+            "task_type": "perdix",
             "model": model
         }
         if custom_prompt:

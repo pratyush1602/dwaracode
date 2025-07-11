@@ -47,14 +47,13 @@ async def task_wrapper(
     model: str = Form(...),
     custom_prompt: str = Form(None)
 ):
-    session_id = request.cookies.get("api_key_session")
     temp_path = f"temp_{file.filename}"
     try:
         # Save uploaded file
         with open(temp_path, "wb") as f:
             f.write(await file.read())
 
-        # Load the dynamically generated module
+     
         module_path = get_wrapper_path(task)
         if not module_path.exists():
             raise HTTPException(status_code=404, detail=f"Wrapper not found: {module_path}")
@@ -66,8 +65,8 @@ async def task_wrapper(
         if not hasattr(task_module, "run_model"):
             raise HTTPException(status_code=500, detail="run_model function not in wrapper.")
 
-        # Call the async run_model (which now POSTS to /api/analyze/)
-        result = await task_module.run_model(temp_path, model, custom_prompt, session_id)
+       
+        result = await task_module.run_model(temp_path, model, custom_prompt)
         return result
 
     except Exception as e:
